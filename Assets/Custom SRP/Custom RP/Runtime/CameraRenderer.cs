@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 
 //roughly equivalnet to scriptable renderers of the Universal RP. 
 //Simple to support different rendering approaches per camera in the future. 
-public class CameraRenderer
+public partial class CameraRenderer
 {
     ScriptableRenderContext context;
     Camera camera;
@@ -19,21 +19,13 @@ public class CameraRenderer
     CullingResults cullingResults;
     //unlit shader is a type of shader does not interact with light
     static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
-    static ShaderTagId[] legacyShaderTagIds = {
-        new ShaderTagId("Always"),
-        new ShaderTagId("ForwardBase"),
-        new ShaderTagId("PrepassBase"),
-        new ShaderTagId("Vertex"),
-        new ShaderTagId("VertexLMRGBM"),
-        new ShaderTagId("VertexLM"),
-    };
-    static Material errorMaterial;
 
     public void Render(ScriptableRenderContext context, Camera camera)
     {
         this.context = context;
         this.camera = camera;
-
+        PrepareBuffer();
+        PrepareForSceneWindow();
         if (!Cull())
         {
             return;
@@ -42,6 +34,7 @@ public class CameraRenderer
         Setup();
         DrawVisibleGeometry();
         DrawUnsupportedShaders();
+        DrawGizmos();
         Submit();
     }
 
@@ -55,13 +48,17 @@ public class CameraRenderer
     {
         //apply the camera's properties to the context
         context.SetupCameraProperties(camera);
-
+        CameraClearFlags flags = camera.clearFlags;
         //clear the render target to get rid of its old contents
         //First two argument indicate whether the depth and color data should be cleared, which is true for both
         //third argument is Color used to clearing - use Color.clear
-        buffer.ClearRenderTarget(true, true, Color.clear);
+        buffer.ClearRenderTarget(
+            flags <= CameraClearFlags.Depth,
+            flags <= CameraClearFlags.Color,
+            flags == CameraClearFlags.Color ?
+				camera.backgroundColor.linear : Color.clear);
 
-        buffer.BeginSample(bufferName);
+        buffer.BeginSample(SampleName);
         ExecuteBuffer();
 
     }
@@ -92,32 +89,9 @@ public class CameraRenderer
 
     }
 
-    void DrawUnsupportedShaders()
-    {
-        if (errorMaterial == null)
-        {
-            errorMaterial =
-                new Material(Shader.Find("Hidden/InternalErrorShader"));
-        }
-        var drawingSettings = new DrawingSettings(
-            legacyShaderTagIds[0], new SortingSettings(camera)
-        ){
-            overrideMaterial = errorMaterial
-        };
-        
-        for (int i = 1; i < legacyShaderTagIds.Length; i++)
-        {
-            drawingSettings.SetShaderPassName(i, legacyShaderTagIds[i]);
-        }
-        var filteringSettings = FilteringSettings.defaultValue;
-        context.DrawRenderers(
-            cullingResults, ref drawingSettings, ref filteringSettings
-        );
-    }
-
     void Submit()
     {
-        buffer.EndSample(bufferName);
+        buffer.EndSample(SampleName);
         ExecuteBuffer();
         context.Submit();
     }
