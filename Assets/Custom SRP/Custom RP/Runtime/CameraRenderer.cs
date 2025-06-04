@@ -15,10 +15,19 @@ public class CameraRenderer
     {
         name = bufferName
     };
+
+    CullingResults cullingResults;
+    //unlit shader is a type of shader does not interact with light
+    static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
     public void Render(ScriptableRenderContext context, Camera camera)
     {
         this.context = context;
         this.camera = camera;
+
+        if (!Cull())
+        {
+            return;
+        }
 
         Setup();
         DrawVisibleGeometry();
@@ -34,12 +43,30 @@ public class CameraRenderer
     void Setup()
     {
         //apply the camera's properties to the context
+        context.SetupCameraProperties(camera);
+
+        //clear the render target to get rid of its old contents
+        //First two argument indicate whether the depth and color data should be cleared, which is true for both
+        //third argument is Color used to clearing - use Color.clear
+        buffer.ClearRenderTarget(true, true, Color.clear);
+
         buffer.BeginSample(bufferName);
         ExecuteBuffer();
-        context.SetupCameraProperties(camera);
+
     }
     void DrawVisibleGeometry()
-    {
+    {   
+        //camera paramter is used to determine whether orthographic or distance-based sorting applies
+        var sortingSettings = new SortingSettings(camera);
+        var drawingSettings = new DrawingSettings(
+            unlitShaderTagId, sortingSettings
+        );
+        //indicate which render queues are allowed. 
+        var filteringSettings = new FilteringSettings(RenderQueueRange.all);
+
+        context.DrawRenderers(
+            cullingResults, ref drawingSettings, ref filteringSettings
+        );
         context.DrawSkybox(camera);
     }
 
@@ -57,4 +84,27 @@ public class CameraRenderer
         context.ExecuteCommandBuffer(buffer);
         buffer.Clear();
     }
+
+    /*
+    Culling objects fall outside of the viw frustum of the camer 
+    */
+    bool Cull()
+    {
+        //Struct that keep track of multiple camera settings and matrices 
+        ScriptableCullingParameters p;
+
+        //retuns whether the parameters could be successfully retrived, as it migth fail for degenerate camera settings 
+        //the out keyword tells us that the method is responsible for correctly setting the parameter 
+        //p gets altered by calling the TryGetCullingParameters
+        if (camera.TryGetCullingParameters(out p))
+        {
+            //ref is used as an optimization, to prevent passing a copy of scriptablecullingparameters struct. 
+            //since stuct and value type passes value through function 
+            cullingResults = context.Cull(ref p);
+
+            return true;
+        }
+        return false;
+    }
+
 }
