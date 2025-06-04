@@ -19,6 +19,16 @@ public class CameraRenderer
     CullingResults cullingResults;
     //unlit shader is a type of shader does not interact with light
     static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+    static ShaderTagId[] legacyShaderTagIds = {
+        new ShaderTagId("Always"),
+        new ShaderTagId("ForwardBase"),
+        new ShaderTagId("PrepassBase"),
+        new ShaderTagId("Vertex"),
+        new ShaderTagId("VertexLMRGBM"),
+        new ShaderTagId("VertexLM"),
+    };
+    static Material errorMaterial;
+
     public void Render(ScriptableRenderContext context, Camera camera)
     {
         this.context = context;
@@ -31,6 +41,7 @@ public class CameraRenderer
 
         Setup();
         DrawVisibleGeometry();
+        DrawUnsupportedShaders();
         Submit();
     }
 
@@ -79,6 +90,29 @@ public class CameraRenderer
             cullingResults, ref drawingSettings, ref filteringSettings
         );
 
+    }
+
+    void DrawUnsupportedShaders()
+    {
+        if (errorMaterial == null)
+        {
+            errorMaterial =
+                new Material(Shader.Find("Hidden/InternalErrorShader"));
+        }
+        var drawingSettings = new DrawingSettings(
+            legacyShaderTagIds[0], new SortingSettings(camera)
+        ){
+            overrideMaterial = errorMaterial
+        };
+        
+        for (int i = 1; i < legacyShaderTagIds.Length; i++)
+        {
+            drawingSettings.SetShaderPassName(i, legacyShaderTagIds[i]);
+        }
+        var filteringSettings = FilteringSettings.defaultValue;
+        context.DrawRenderers(
+            cullingResults, ref drawingSettings, ref filteringSettings
+        );
     }
 
     void Submit()
