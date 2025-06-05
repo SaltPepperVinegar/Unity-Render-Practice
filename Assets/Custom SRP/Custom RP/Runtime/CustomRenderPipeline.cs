@@ -3,14 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
-
+// defines the rendering pipeline's functionality 
 public class CustomRenderPipeline : RenderPipeline
 {
+    
     /*
     because the camera array parameter requires allocating memory every frame 
     an alternative has been introduced that has a list parameter instead on unit 2022s
     */
     CameraRenderer renderer = new CameraRenderer();
+
+    public CustomRenderPipeline()
+    {
+        GraphicsSettings.useScriptableRenderPipelineBatching = true;
+    }
     protected override void Render(
     ScriptableRenderContext context, List<Camera> cameras)
     {
