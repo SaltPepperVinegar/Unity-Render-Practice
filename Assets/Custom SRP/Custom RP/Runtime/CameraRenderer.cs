@@ -20,7 +20,7 @@ public partial class CameraRenderer
     //unlit shader is a type of shader does not interact with light
     static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
 
-    public void Render(ScriptableRenderContext context, Camera camera)
+    public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing)
     {
         this.context = context;
         this.camera = camera;
@@ -32,7 +32,7 @@ public partial class CameraRenderer
         }
 
         Setup();
-        DrawVisibleGeometry();
+        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
         DrawUnsupportedShaders();
         DrawGizmos();
         Submit();
@@ -62,7 +62,7 @@ public partial class CameraRenderer
         ExecuteBuffer();
 
     }
-    void DrawVisibleGeometry()
+    void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
     {
         //camera paramter is used to determine whether orthographic or distance-based sorting applies
         var sortingSettings = new SortingSettings(camera)
@@ -71,7 +71,10 @@ public partial class CameraRenderer
         };
         var drawingSettings = new DrawingSettings(
             unlitShaderTagId, sortingSettings
-        );
+        ) {
+			enableDynamicBatching = useDynamicBatching,
+			enableInstancing = useGPUInstancing
+		};
         //indicate which render queues are allowed. 
         var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
 

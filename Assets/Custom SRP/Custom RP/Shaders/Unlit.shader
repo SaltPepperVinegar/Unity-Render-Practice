@@ -2,22 +2,38 @@ Shader "Custom RP/Unlit"
 {   
     //define material prop
     Properties {
+        //alpha map for semitransparent material
+        _BaseMap("Texture", 2D) = "white" {}
         _BaseColor("Color", Color) = (1.0, 1.0, 1.0, 1.0)
+        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
+        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
+        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0
+        [Enum(Off, 0, On, 1)] _ZWrite ("Z Write", Float) = 1
     }
 
     SubShader {
         //posible to have other type of non-HLSL code in pass block 
         Pass { 
+            Blend [_SrcBlend] [_DstBlend]
+            //control depth is written or not via Zwrite
+            Zwrite [_ZWrite]
             //HLSL key words  for HLSL script 
             HLSLPROGRAM
+             
+            #pragma shader_feature _CLIPPING
+            
             //allowing GPU instancing 
             #pragma multi_compile_instancing
+
             /*
                 vertext kernel/program/shader
                 transforming the vertex coordinates from 3D space to 2D visualization space
             */
             //use function UnlitPassVertex in vertex stage
             #pragma vertex UnlitPassVertex
+
+
             /*
                 fragment kernl/program/shader
                 filling all pixels that are covered by the resulting triangle
