@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -17,9 +18,12 @@ public partial class CameraRenderer
     };
 
     CullingResults cullingResults;
-    //unlit shader is a type of shader does not interact with light
-    static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+    // a class in Unity SRP that represents a specific shader pass/tag in the rendering pipeline
+    static ShaderTagId 
+        unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
+        litShaderTagId = new ShaderTagId("CustomLit");
 
+    Lighting lighting = new Lighting();
     public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing)
     {
         this.context = context;
@@ -32,6 +36,7 @@ public partial class CameraRenderer
         }
 
         Setup();
+        lighting.Setup(context, cullingResults);
         DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
         DrawUnsupportedShaders();
         DrawGizmos();
@@ -75,6 +80,10 @@ public partial class CameraRenderer
 			enableDynamicBatching = useDynamicBatching,
 			enableInstancing = useGPUInstancing
 		};
+
+        //setshaderpassname sets which shader pass to use for given index in the draw call. 
+        drawingSettings.SetShaderPassName(1,litShaderTagId);
+
         //indicate which render queues are allowed. 
         var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
 
