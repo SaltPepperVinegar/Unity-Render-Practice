@@ -18,7 +18,7 @@ public class CustomRenderPipeline : RenderPipeline
         this.useDynamicBatching = useDynamicBatching;
         this.useGPUInstancing = useGPUInstancing;
         GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
-        //convert ethe final light intensity to linear space. 
+        //convert the final light intensity to linear space. 
         GraphicsSettings.lightsUseLinearIntensity = true;
     }
     protected override void Render(
