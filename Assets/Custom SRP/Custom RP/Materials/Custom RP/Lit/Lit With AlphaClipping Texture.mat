@@ -77,7 +77,9 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
+    - _PREMULTIPLY_ALPHA: 0
     - _Parallax: 0.02
+    - _PremulAlpha: 0
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1

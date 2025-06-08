@@ -216,6 +216,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &585281303
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 585281304}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &585281304
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 585281303}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.13326159, y: -0.746874, z: 1.3788711}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &859980511
 GameObject:
   m_ObjectHideFlags: 0
@@ -557,7 +588,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4deefdc1d24c4694283973ce16b936a6, type: 2}
+  - {fileID: 2100000, guid: efa2b49a6bebb9148981c14496912cb2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -614,10 +645,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e2427219f25b6940a0afa706b2d72c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseColor: {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
+  baseColor: {r: 0.504, g: 0.504, b: 0.504, a: 1}
   cutoff: 0.541
-  metallic: 0.218
-  smoothness: 0.5
+  metallic: 0
+  smoothness: 0.507
 --- !u!1 &1921343720
 GameObject:
   m_ObjectHideFlags: 0
@@ -742,7 +773,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  material: {fileID: 2100000, guid: 4deefdc1d24c4694283973ce16b936a6, type: 2}
+  material: {fileID: 2100000, guid: 89f5e49090c5a4741b705176b54c1397, type: 2}
 --- !u!4 &2006700250
 Transform:
   m_ObjectHideFlags: 0
@@ -769,3 +800,4 @@ SceneRoots:
   - {fileID: 1267881816}
   - {fileID: 1795045232}
   - {fileID: 2006700250}
+  - {fileID: 585281304}
