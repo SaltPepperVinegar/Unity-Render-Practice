@@ -29,9 +29,13 @@ float SpecularStrength (Surface surface, BRDF brdf, Light light) {
 float3 DirectBRDF (Surface surface, BRDF brdf, Light light) {
     return SpecularStrength(surface, brdf, light) * brdf.specular + brdf.diffuse;
 }
-BRDF GetBRDF(Surface surface) {
+BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false) {
     BRDF brdf;
     brdf.diffuse = surface.color * OneMinusReflectivity(surface.metallic);
+    if (applyAlphaToDiffuse){
+	    brdf.diffuse *= surface.alpha;
+    }
+    
     //amount of outgoing light cannot exceed the amount of incoming light
     //using the metallic property to interpolate between the minimum reflectivity and the surface color.
     brdf.specular = lerp(MIN_REFLECTIVITY, surface.color, surface.metallic);
