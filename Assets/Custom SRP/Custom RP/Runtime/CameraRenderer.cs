@@ -24,22 +24,38 @@ public partial class CameraRenderer
         litShaderTagId = new ShaderTagId("CustomLit");
 
     Lighting lighting = new Lighting();
-    public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing)
-    {
+    public void Render(
+        ScriptableRenderContext context, Camera camera, bool useDynamicBatching,
+        bool useGPUInstancing, ShadowSettings shadowDrawingSettings
+    ) {
         this.context = context;
         this.camera = camera;
+        //for profiler sampling purposes
         PrepareBuffer();
         PrepareForSceneWindow();
-        if (!Cull())
+        if (!Cull(shadowDrawingSettings.maxDistance))
         {
             return;
         }
 
+        buffer.BeginSample(SampleName);
+
+        ExecuteBuffer();
+
+        lighting.Setup(context, cullingResults, shadowDrawingSettings);
+
+        buffer.EndSample(SampleName);
+
         Setup();
-        lighting.Setup(context, cullingResults);
+
         DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
+
         DrawUnsupportedShaders();
+
         DrawGizmos();
+
+        lighting.Cleanup();
+
         Submit();
     }
 
@@ -119,7 +135,7 @@ public partial class CameraRenderer
     /*
     Culling objects fall outside of the viw frustum of the camer 
     */
-    bool Cull()
+    bool Cull(float maxShadowDistance)
     {
         //Struct that keep track of multiple camera settings and matrices 
         ScriptableCullingParameters p;
@@ -129,6 +145,7 @@ public partial class CameraRenderer
         //p gets altered by calling the TryGetCullingParameters
         if (camera.TryGetCullingParameters(out p))
         {
+            p.shadowDistance = Mathf.Min(maxShadowDistance, camera.farClipPlane);
             //ref is used as an optimization, to prevent passing a copy of scriptablecullingparameters struct. 
             //since stuct and value type passes value through function 
             cullingResults = context.Cull(ref p);

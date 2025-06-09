@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 public class Lighting
 {
     const string bufferName = "Lighting";
-    const int maxDirLightCount = 4; 
+    const int maxDirLightCount = 4;
     CommandBuffer buffer = new CommandBuffer
     {
         name = bufferName
@@ -26,11 +26,14 @@ public class Lighting
         dirLightDirections = new Vector4[maxDirLightCount];
 
     CullingResults cullingResults;
-    public void Setup(ScriptableRenderContext context, CullingResults cullingResults)
+    Shadows shadows = new Shadows();
+    public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSettings shadowSettings)
     {
         this.cullingResults = cullingResults;
         buffer.BeginSample(bufferName);
+        shadows.Setup(context, cullingResults, shadowSettings);
         SetupLights();
+        shadows.Render();
         buffer.EndSample(bufferName);
         context.ExecuteCommandBuffer(buffer);
         buffer.Clear();
@@ -62,10 +65,16 @@ public class Lighting
     }
 
     void SetupDirectionalLight(int index, ref VisibleLight visibleLight)
-    {   
+    {
         //final color provided by the final color property 
         dirLightColors[index] = visibleLight.finalColor;
         // forward vector can be found via the third column of localToWorldMatrix
         dirLightDirections[index] = -visibleLight.localToWorldMatrix.GetColumn(2);
+        shadows.ReserveDirectionalShadows(visibleLight.light, index);
+    }
+
+    public void Cleanup()
+    {
+        shadows.Cleanup();
     }
 }

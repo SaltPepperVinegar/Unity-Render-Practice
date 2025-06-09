@@ -13,10 +13,13 @@ public class CustomRenderPipeline : RenderPipeline
     */
     bool useDynamicBatching, useGPUInstancing;
     CameraRenderer renderer = new CameraRenderer();
-    public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher)
+    ShadowSettings shadowSettings;
+    public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, ShadowSettings shadowSettings)
     {
         this.useDynamicBatching = useDynamicBatching;
         this.useGPUInstancing = useGPUInstancing;
+        this.shadowSettings = shadowSettings;
+
         GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
         //convert the final light intensity to linear space. 
         GraphicsSettings.lightsUseLinearIntensity = true;
@@ -26,7 +29,7 @@ public class CustomRenderPipeline : RenderPipeline
     {
         for (int i = 0; i < cameras.Count; i++)
         {
-            renderer.Render(context, cameras[i], useDynamicBatching, useGPUInstancing);
+            renderer.Render(context, cameras[i], useDynamicBatching, useGPUInstancing, shadowSettings);
         }
     }
 
