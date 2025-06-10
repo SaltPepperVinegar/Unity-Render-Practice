@@ -64,7 +64,8 @@ public partial class CameraRenderer
     partial void PrepareForSceneWindow()
     {
         if (camera.cameraType == CameraType.SceneView)
-        {
+        {   
+            //Add UI to the world geometry when rendering for the scene window
             ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
         }
     }

@@ -33,11 +33,15 @@ public partial class CameraRenderer
         //for profiler sampling purposes
         PrepareBuffer();
         PrepareForSceneWindow();
+
+        //call context cull function and set CullingResults, return 
         if (!Cull(shadowDrawingSettings.maxDistance))
-        {
+        {   
+            //if culling fails, early return
             return;
         }
 
+        //sells unity's Profiler to begin measure performance for a block of render commands
         buffer.BeginSample(SampleName);
 
         ExecuteBuffer();
@@ -144,7 +148,8 @@ public partial class CameraRenderer
         //the out keyword tells us that the method is responsible for correctly setting the parameter 
         //p gets altered by calling the TryGetCullingParameters
         if (camera.TryGetCullingParameters(out p))
-        {
+        {   
+
             p.shadowDistance = Mathf.Min(maxShadowDistance, camera.farClipPlane);
             //ref is used as an optimization, to prevent passing a copy of scriptablecullingparameters struct. 
             //since stuct and value type passes value through function 
