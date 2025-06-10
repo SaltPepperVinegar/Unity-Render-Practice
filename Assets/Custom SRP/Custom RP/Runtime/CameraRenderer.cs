@@ -20,6 +20,7 @@ public partial class CameraRenderer
     CullingResults cullingResults;
     // a class in Unity SRP that represents a specific shader pass/tag in the rendering pipeline
     static ShaderTagId 
+        //when pass doesn't have lightmode tag, use this tag as default
         unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
         litShaderTagId = new ShaderTagId("CustomLit");
 

@@ -58,7 +58,7 @@ public class CustomShaderGUI : ShaderGUI
     }
 
 
-    void SetKeyWord(string keyword, bool enabled)
+    private void SetKeyword(string keyword, bool enabled)
     {
         if (enabled)
         {
@@ -90,11 +90,6 @@ public class CustomShaderGUI : ShaderGUI
 			SetKeyword(keyword, value);
 		}
 	}
-
-    private void SetKeyword(string keyword, bool value)
-    {
-        throw new System.NotImplementedException();
-    }
 
     //render queue is set by assigning to the renderqueue property of all materials 
     RenderQueue RenderQueue

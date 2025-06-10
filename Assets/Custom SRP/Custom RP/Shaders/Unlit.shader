@@ -15,6 +15,7 @@ Shader "Custom RP/Unlit"
     SubShader {
         //posible to have other type of non-HLSL code in pass block 
         Pass { 
+
             Blend [_SrcBlend] [_DstBlend]
             //control depth is written or not via Zwrite
             Zwrite [_ZWrite]
