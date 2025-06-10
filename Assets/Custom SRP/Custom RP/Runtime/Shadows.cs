@@ -20,11 +20,11 @@ public class Shadows
     static int
         dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas"),
         //shadow transfomration matrix for each shadowed directional light
-        dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
+		dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
 
     static Matrix4x4[]
 
-        dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount];
+		dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount];
     public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSettings settings)
     {
         this.cullingResults = cullingResults;
@@ -131,12 +131,12 @@ public class Shadows
         );
         //contains information about how shadow casting object should be culled
         shadowSettings.splitData = splitData;
+
+        //conversion matrix from world space to light space 
 		dirShadowMatrices[index] = ConvertToAtlasMatrix(
 			projectionMatrix * viewMatrix,
 			SetTileViewport(index, split, tileSize), split
 		);
-        //conversion matrix from world space to light space 
-        dirShadowMatrices[index] = projectionMatrix * viewMatrix;
         buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
         ExecuteBuffer();
         context.DrawShadows(ref shadowSettings);
