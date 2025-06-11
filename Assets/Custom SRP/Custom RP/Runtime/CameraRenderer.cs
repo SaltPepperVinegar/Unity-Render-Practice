@@ -16,7 +16,6 @@ public partial class CameraRenderer
     {
         name = bufferName
     };
-
     CullingResults cullingResults;
     // a class in Unity SRP that represents a specific shader pass/tag in the rendering pipeline
     static ShaderTagId 
@@ -25,10 +24,12 @@ public partial class CameraRenderer
         litShaderTagId = new ShaderTagId("CustomLit");
 
     Lighting lighting = new Lighting();
+    
     public void Render(
         ScriptableRenderContext context, Camera camera, bool useDynamicBatching,
         bool useGPUInstancing, ShadowSettings shadowDrawingSettings
-    ) {
+    )
+    {
         this.context = context;
         this.camera = camera;
         //for profiler sampling purposes
@@ -37,7 +38,7 @@ public partial class CameraRenderer
 
         //call context cull function and set CullingResults, return 
         if (!Cull(shadowDrawingSettings.maxDistance))
-        {   
+        {
             //if culling fails, early return
             return;
         }
@@ -64,20 +65,25 @@ public partial class CameraRenderer
         Submit();
     }
 
-    /*
+
+
+    void Setup()
+    {
+        /*
         To correctly render the scene, need to set up the view - Projection matrix (unity_MatrixVP)
         Projection matrix combines view matrix(1) with projection matrix(2) 
             1. camera's position and orientation 
             2. camera's perspective or orthographic projection 
-    */
-    void Setup()
-    {
+        */
         //apply the camera's properties to the context
+        //set up the matrix as well as some other properties
         context.SetupCameraProperties(camera);
-        CameraClearFlags flags = camera.clearFlags;
+
+
         //clear the render target to get rid of its old contents
         //First two argument indicate whether the depth and color data should be cleared, which is true for both
         //third argument is Color used to clearing - use Color.clear
+            CameraClearFlags flags = camera.clearFlags;
         buffer.ClearRenderTarget(
             flags <= CameraClearFlags.Depth,
             flags <= CameraClearFlags.Color,

@@ -1,6 +1,7 @@
 #ifndef  CUSTOM_SHADOWS_INCLUDED
 #define  CUSTOM_SHADOWS_INCLUDED
 #define MAX_DIRECTIONAL_LIGHT_COUNT 4
+#define MAX_CASCADE_COUNT 4
 //atlas isn't a regular texture
 TEXTURE2D_SHADOW(_DirectionalShadowAtlas);
 //explicit sampler state
@@ -8,14 +9,55 @@ TEXTURE2D_SHADOW(_DirectionalShadowAtlas);
 SAMPLER_CMP(SHADOW_SAMPLER);
 
 CBUFFER_START(_CustomShadows)
-    float4x4 _DirectionalShadowMatrices[MAX_DIRECTIONAL_LIGHT_COUNT];
+	int _CascadeCount; 
+	float4 _CascadeCullingSpheres[MAX_CASCADE_COUNT];
+    float4x4 _DirectionalShadowMatrices[MAX_DIRECTIONAL_LIGHT_COUNT * MAX_CASCADE_COUNT];
+	float4 _ShadowDistanceFade;
 CBUFFER_END
 
 struct DirectionalShadowData {
 	float strength;
 	int tileIndex;
 };
+//the cascade index is determined per fragment than per light
+struct ShadowData {
+	int cascadeIndex;
+	float strength;
+};
 
+float FadeShadowStrength (float distance, float scale, float fade){
+	return saturate((1.0 - distance * scale) *fade);
+}
+//return the shadow data for a world-sace surface 
+ShadowData GetShadowData (Surface surfaceWS) {
+	ShadowData data;
+	data.strength = FadeShadowStrength(
+		surfaceWS.depth,  _ShadowDistanceFade.x, _ShadowDistanceFade.y
+	);
+	// loop through all cascade culling spheres until find one that contains the surface position
+
+	int i; 
+	for (i = 0; i< _CascadeCount; i++){
+		float4 sphere = _CascadeCullingSpheres[i];
+		float distanceSqr =DistanceSquared(surfaceWS.position, sphere.xyz);
+		if (distanceSqr < sphere.w) {
+			if (i == _CascadeCount - 1){
+				data.strength *= FadeShadowStrength(
+					distanceSqr, 1.0 / sphere.w, _ShadowDistanceFade.z
+				);
+			}
+			break;
+		}
+	}
+
+	//strength set to 0 if end up beyond the last cascade
+	if (i == _CascadeCount) {
+		data.strength = 1.0;
+	}
+
+	data.cascadeIndex = i;
+	return data;
+}
 
 //samples the shadow atlas via the SAMPLE_TEXTURE2D_SHADOW macro
 //pass in atlas, shadow sampler, position in shadow texture space 
