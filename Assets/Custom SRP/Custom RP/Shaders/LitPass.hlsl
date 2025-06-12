@@ -73,6 +73,8 @@ float4 LitPassFragment(Varyings input)  : SV_TARGET {
 	surface.position = input.positionWS;
     surface.metallic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
     surface.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
+    //generates a rotated tile dither pattern given a screen-space XY position (clip-space XY position)
+    surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0);
     surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
 	surface.depth = -TransformWorldToView(input.positionWS).z;
 	#if defined(_PREMULTIPLY_ALPHA)

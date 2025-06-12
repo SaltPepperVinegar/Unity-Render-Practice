@@ -42,7 +42,12 @@ public class Shadows
         "_DIRECTIONAL_PCF3",
         "_DIRECTIONAL_PCF5",
         "_DIRECTIONAL_PCF7",
+    },
+    cascadeBlendKeywords = {
+        "_CASCADE_BLEND_SOFT",
+        "_CASCADE_BLEND_DITHER",
     };
+
     public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSettings settings)
     {
         this.cullingResults = cullingResults;
@@ -157,7 +162,12 @@ public class Shadows
                 1f / (1f - f * f)
                 )
             );
-        SetKeywords();
+        SetKeywords(
+            directionalFilterKeywords, (int) settings.directional.filter -1
+        );
+        SetKeywords(
+            cascadeBlendKeywords, (int)settings.directional.cascadeBlend - 1
+        );
 
         //stores the size in X component, and texel size in y component
         buffer.SetGlobalVector(
@@ -167,18 +177,17 @@ public class Shadows
         ExecuteBuffer();
 
     }
-    void SetKeywords()
+    void SetKeywords(string[] keywords, int enabledIndex)
     {
-        int enableIndex = (int)settings.directional.filter - 1;
-        for (int i = 0; i < directionalFilterKeywords.Length; i++)
+        for (int i = 0; i < keywords.Length; i++)
         {
-            if (i == enableIndex)
+            if (i == enabledIndex)
             {
-                buffer.EnableShaderKeyword(directionalFilterKeywords[i]);
+                buffer.EnableShaderKeyword(keywords[i]);
             }
             else
             {
-                buffer.DisableShaderKeyword(directionalFilterKeywords[i]);
+                buffer.DisableShaderKeyword(keywords[i]);
             }
         }
     }
