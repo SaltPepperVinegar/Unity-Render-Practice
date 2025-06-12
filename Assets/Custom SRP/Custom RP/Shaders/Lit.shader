@@ -16,6 +16,8 @@ Shader "Custom RP/Lit"
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0
         [Enum(Off, 0, On, 1)] _ZWrite ("Z Write", Float) = 1
         [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
+        [Toggle (_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
+
     }   
 
     SubShader {
@@ -34,7 +36,8 @@ Shader "Custom RP/Lit"
             HLSLPROGRAM
             //raising the target level of shader pass to 3.5 
             #pragma target 3.5
-
+            
+            #pragma shader_feature _RECEIVE_SHADOWS 
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _PREMULTIPLY_ALPHA
             #pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
@@ -73,7 +76,7 @@ Shader "Custom RP/Lit"
 
             HLSLPROGRAM
 			#pragma target 3.5
-			#pragma shader_feature _CLIPPING
+			#pragma shader_feature _ _SHADOWS_CLIP _SHADOWS_DITHER
 			#pragma multi_compile_instancing
 			#pragma vertex ShadowCasterPassVertex
 			#pragma fragment ShadowCasterPassFragment

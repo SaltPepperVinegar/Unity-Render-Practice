@@ -122,7 +122,11 @@ float FilterDirectionalShadow (float3 positionSTS) {
 //return the shadow attenuation 
 //given directional shadow data and a surface defined in world space 
 float GetDirectionalShadowAttenuation (DirectionalShadowData directional, ShadowData global, Surface surfaceWS){
-    if (directional.strength <= 0.0){
+    #if !defined(_RECEIVE_SHADOWS)
+		return 1.0;
+	#endif
+
+	if (directional.strength <= 0.0){
         return 1.0;
     }
 	//multiply the surface normal with the offset to find the normal bias 
