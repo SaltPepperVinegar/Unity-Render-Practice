@@ -1,3 +1,4 @@
+using System;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -115,6 +116,20 @@ public class Shadows
         }
     }
 
+    void SetKeywords(string[] keywords, int enabledIndex)
+    {
+        for (int i = 0; i < keywords.Length; i++)
+        {
+            if (i == enabledIndex)
+            {
+                buffer.EnableShaderKeyword(keywords[i]);
+            }
+            else
+            {
+                buffer.DisableShaderKeyword(keywords[i]);
+            }
+        }
+    }
 
     void RenderDirectionalShadows()
     {
@@ -177,29 +192,18 @@ public class Shadows
         ExecuteBuffer();
 
     }
-    void SetKeywords(string[] keywords, int enabledIndex)
-    {
-        for (int i = 0; i < keywords.Length; i++)
-        {
-            if (i == enabledIndex)
-            {
-                buffer.EnableShaderKeyword(keywords[i]);
-            }
-            else
-            {
-                buffer.DisableShaderKeyword(keywords[i]);
-            }
-        }
-    }
+    
     void RenderDirectionalShadows(int index, int split, int tileSize)
     {
         ShadowedDirectionalLight light = shadowedDirectionalLights[index];
+        
         var shadowSettings =
             new ShadowDrawingSettings(cullingResults, light.visibleLightIndex, BatchCullingProjectionType.Orthographic);
+        
         int cascadeCount = settings.directional.cascadeCount;
         int tileOffset = index * cascadeCount;
         Vector3 ratios = settings.directional.CascadRatios;
-
+        float cullingFactor = Mathf.Max(0f, 0.8f - settings.directional.cascadeFade);
         for (int i = 0; i < cascadeCount; i++)
         {
             // figure out view and prjojection matrices that match the light's orientation
@@ -208,6 +212,8 @@ public class Shadows
                 out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix,
                 out ShadowSplitData splitData
             );
+            //cull some of shadow casters cascades that result covered in a small cascades
+            splitData.shadowCascadeBlendCullingFactor = cullingFactor;
             //culling data is part of the splitdata that cullingresult outputs 
             //only for first light as the cascade for all lights are equivalent
             shadowSettings.splitData = splitData;
