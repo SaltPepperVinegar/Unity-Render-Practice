@@ -110,6 +110,9 @@ public class Shadows
         }
         else
         {
+            //not claiming a texture will lead to problems for WebGL 2.0
+            //  - since it binds textures and samplers togerther 
+            //avoid this by get a 1*1 dummy texture when no shadows are needed. 
             buffer.GetTemporaryRT(dirShadowAtlasId, 1, 1,
             32,
             FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
