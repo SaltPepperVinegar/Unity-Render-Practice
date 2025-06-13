@@ -103,9 +103,12 @@ public partial class CameraRenderer
         };
         var drawingSettings = new DrawingSettings(
             unlitShaderTagId, sortingSettings
-        ) {
-			enableDynamicBatching = useDynamicBatching,
-			enableInstancing = useGPUInstancing
+        )
+        {
+            enableDynamicBatching = useDynamicBatching,
+            enableInstancing = useGPUInstancing,
+            //flag from the PerObjectData which tells unity to include shader data 
+            perObjectData = PerObjectData.Lightmaps
 		};
 
         //setshaderpassname sets which shader pass to use for given index in the draw call. 

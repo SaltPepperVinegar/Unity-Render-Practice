@@ -43,6 +43,9 @@ Shader "Custom RP/Lit"
             #pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
             #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
 
+            //render lightmapped objects with light map on shader variants
+            #pragma multi_compile _ LIGHTMAP_ON
+
             //allowing GPU instancing 
             #pragma multi_compile_instancing
 

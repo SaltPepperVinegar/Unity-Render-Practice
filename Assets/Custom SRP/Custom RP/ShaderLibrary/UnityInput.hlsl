@@ -9,6 +9,10 @@ CBUFFER_START(UnityPerDraw)
     float4x4 unity_WorldToObject;
     float4 unity_LODFade;
     real4 unity_WorldTransformParams;
+
+    float4 unity_LightmapST;
+    //deprecated variable to ensure SRP batcher compatibility 
+    float4 unity_DynamicLightmapST;
 CBUFFER_END 
 
 float3 _WorldSpaceCameraPos;
