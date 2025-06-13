@@ -75,7 +75,7 @@ ShadowData GetShadowData (Surface surfaceWS) {
 
 	//strength set to 0 if end up beyond the last cascade
 	if (i == _CascadeCount) {
-		data.strength = 1.0;
+		data.strength = 0.0;
 	}
 	#if defined(_CASCADE_BLEND_DITHER)
 		else if (data.cascadeBlend < surfaceWS.dither){

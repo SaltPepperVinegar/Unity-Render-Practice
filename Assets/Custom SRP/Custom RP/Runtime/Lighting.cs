@@ -58,7 +58,6 @@ public class Lighting
                     break;
                 }
             }
-            buffer.SetGlobalVectorArray(dirLightShadowDataId, dirLightShadowData);
         }
 
         buffer.SetGlobalInt(dirLightCountId, dirLightCount);
