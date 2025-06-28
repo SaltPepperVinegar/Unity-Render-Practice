@@ -108,7 +108,8 @@ public partial class CameraRenderer
             enableDynamicBatching = useDynamicBatching,
             enableInstancing = useGPUInstancing,
             //flag from the PerObjectData which tells unity to include shader data 
-            perObjectData = PerObjectData.Lightmaps
+            //perObjectData is a bit flag enum 
+            perObjectData = PerObjectData.Lightmaps | PerObjectData.LightProbe
 		};
 
         //setshaderpassname sets which shader pass to use for given index in the draw call. 
