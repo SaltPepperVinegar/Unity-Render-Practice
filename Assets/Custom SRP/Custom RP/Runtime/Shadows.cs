@@ -237,6 +237,7 @@ public class Shadows
             //pushing the depth of shadow casters away from the light so incorrect self-shadowing no longer happens
             buffer.SetGlobalDepthBias(0f, light.slopeScaleBias);
             ExecuteBuffer();
+            //execute each object's shadowcaster subshader pass  
             context.DrawShadows(ref shadowSettings);
             buffer.SetGlobalDepthBias(0f, 0f);
 

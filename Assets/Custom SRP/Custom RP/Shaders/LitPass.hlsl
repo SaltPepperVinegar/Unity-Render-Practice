@@ -13,6 +13,7 @@ struct Attributes {
     float3 positionOS : POSITION;
     float3 normalOS : NORMAL;
     float2 baseUV : TEXCOORD0;
+    //macro defined in GI.hlsl
     GI_ATTRIBUTE_DATA
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };

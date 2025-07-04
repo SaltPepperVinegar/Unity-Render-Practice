@@ -52,7 +52,9 @@ Shader "Custom RP/Unlit"
             ENDHLSL
 
         }
-
+        
+        //depth only rendering pass
+        //output depth texture
         Pass{
             Tags {
                 "LightMode" = "ShadowCaster"
@@ -68,6 +70,23 @@ Shader "Custom RP/Unlit"
 			#pragma fragment ShadowCasterPassFragment
 			#include "ShadowCasterPass.hlsl"
 			ENDHLSL
+        }
+
+        //the editor and lightmappers use when baking
+        Pass{
+            Tags {
+                "LightMode" = "Meta"
+            }
+            //cullings always be off, 
+
+            Cull Off
+
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex MetaPassVertex
+            #pragma fragment MetaPassFragment
+            #include "MetaPass.hlsl"
+            ENDHLSL
         }
         
     }

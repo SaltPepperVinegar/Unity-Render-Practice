@@ -25,7 +25,7 @@ Shader "Custom RP/Lit"
         #include "../ShaderLibrary/Common.hlsl"
         #include "LitInput.hlsl"
         ENDHLSL
-        
+
         //posible to have other type of non-HLSL code in pass block 
         Pass { 
             //used to define certain properties that shader pass will associate with 
@@ -75,6 +75,8 @@ Shader "Custom RP/Lit"
 
         }
 
+        //depth only rendering pass
+        //output depth texture
         Pass{
             Tags {
                 "LightMode" = "ShadowCaster"
@@ -91,6 +93,25 @@ Shader "Custom RP/Lit"
 			#include "ShadowCasterPass.hlsl"
 			ENDHLSL
         }
+
+
+        //the editor and lightmappers use when baking
+        Pass{
+            Tags {
+                "LightMode" = "Meta"
+            }
+            //cullings always be off, 
+
+            Cull Off
+
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex MetaPassVertex
+            #pragma fragment MetaPassFragment
+            #include "MetaPass.hlsl"
+            ENDHLSL
+        }
+
         
     }
 
