@@ -2,19 +2,6 @@
 #define  CUSTOM_UNLIT_PASS_INCLUDED
 
 #include "../ShaderLibrary/Common.hlsl"
-TEXTURE2D(_BaseMap);
-SAMPLER(sampler_BaseMap);
-/*
-SRP batcher:
-    all material properties have to be defined inside a concrete memory buffer 
-*/
-//also allowing per-instance material data 
-UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-    //segragates _BaseColor by putting it in a speciic constant memory buffer, although it remains accessble at the global level
-    UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
-    UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
-    UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
-UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 struct Attributes {
     float3 positionOS : POSITION;

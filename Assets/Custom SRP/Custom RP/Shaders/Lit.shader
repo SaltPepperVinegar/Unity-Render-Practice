@@ -21,6 +21,11 @@ Shader "Custom RP/Lit"
     }   
 
     SubShader {
+        HLSLINCLUDE 
+        #include "../ShaderLibrary/Common.hlsl"
+        #include "LitInput.hlsl"
+        ENDHLSL
+        
         //posible to have other type of non-HLSL code in pass block 
         Pass { 
             //used to define certain properties that shader pass will associate with 
