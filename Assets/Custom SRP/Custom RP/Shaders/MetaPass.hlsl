@@ -10,6 +10,8 @@
 struct Attributes {
     float3 positionOS : POSITION;
     float2 baseUV : TEXCOORD0;
+    float2 lightMapUV : TEXCOORD1;
+
 };
 
 struct Varyings {
@@ -19,13 +21,19 @@ struct Varyings {
 
 Varyings MetaPassVertex(Attributes input){
     Varyings output;
+    input.positionOS.xy =
+        input.lightMapUV * unity_LightmapST.xy + unity_LightmapST.zw;
+    //dummy assignment 
+    //  OpenGL doesn't work unless it explicitly uses the Z coordinate. 
+    input.positionOS.z = input.positionOS.z > 0.0 ? FLT_MIN : 0.0;
+    output.positionCS = TransformWorldToHClip(input.positionOS);
     output.baseUV =  TransformBaseUV(input.baseUV);
-    output.positionCS = 0.0;
     return output;
 }
 
 //float should be used for positions and texture coodinates only and half everything elseif optimizing for mobile 
 float4 MetaPassFragment(Varyings input)  : SV_TARGET {
+    bool4 unity_MetaFragmentControl;
     float4 base = GetBase(input.baseUV);
     Surface surface;
     ZERO_INITIALIZE(Surface, surface);
@@ -34,8 +42,15 @@ float4 MetaPassFragment(Varyings input)  : SV_TARGET {
     surface.smoothness = GetSmoothness(input.baseUV);
     BRDF brdf = GetBRDF(surface, true);
     float4 meta = 0.0;
+    if (unity_MetaFragmentControl.x) {
+        meta = float4(brdf.diffuse, 1.0);
+    }
+    meta.rgb += brdf.specular * brdf.roughness * 0.5; 
+    meta.rgb = min(
+        PositivePow(meta.rgb, unity_oneOverOutputBoost), unity_MaxOutputValue
+    );
 	return meta;
 } 
 
   
-#endif
+#endif 
