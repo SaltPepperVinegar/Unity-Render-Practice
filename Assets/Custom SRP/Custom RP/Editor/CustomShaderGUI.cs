@@ -35,9 +35,9 @@ public class CustomShaderGUI : ShaderGUI
     {
         set => SetProperty("_ZWrite", value ? 1f : 0f);
     }
-	bool HasProperty (string name) =>
-		FindProperty(name, properties, false) != null;
-	bool HasPremultiplyAlpha => HasProperty("_PremulAlpha");
+    bool HasProperty(string name) =>
+        FindProperty(name, properties, false) != null;
+    bool HasPremultiplyAlpha => HasProperty("_PremulAlpha");
 
     enum ShadowMode
     {
@@ -53,7 +53,7 @@ public class CustomShaderGUI : ShaderGUI
                 SetKeyword("_SHADOWS_CLIP", value == ShadowMode.Clip);
                 SetKeyword("_SHADOWS_DITHER", value == ShadowMode.Dither);
             }
-        }   
+        }
     }
     //disable shadowcaster pass per object 
     void SetShadowCasterPass()
@@ -76,7 +76,7 @@ public class CustomShaderGUI : ShaderGUI
         this.editor = materialEditor;
         this.materials = materialEditor.targets;
         this.properties = properties;
-        
+
         BakedEmission();
 
         EditorGUILayout.Space();
@@ -91,17 +91,21 @@ public class CustomShaderGUI : ShaderGUI
         if (EditorGUI.EndChangeCheck())
         {
             SetShadowCasterPass();
+            CopyLightMappingProperties();
         }
     }
 
-    void BakedEmission() {
+    void BakedEmission()
+    {
         EditorGUI.BeginChangeCheck();
         editor.LightmapEmissionProperty();
-        if (EditorGUI.EndChangeCheck()) {
-            foreach (Material m in editor.targets) {
+        if (EditorGUI.EndChangeCheck())
+        {
+            foreach (Material m in editor.targets)
+            {
                 //disable the default emission  flag when the emission mode is changed.
-                m.globalIlluminationFlags &= 
-                    ~ MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+                m.globalIlluminationFlags &=
+                    ~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
             }
         }
     }
@@ -123,21 +127,25 @@ public class CustomShaderGUI : ShaderGUI
             }
         }
     }
-	bool SetProperty (string name, float value) {
-		MaterialProperty property = FindProperty(name, properties, false);
-		if (property != null) {
-			property.floatValue = value;
-			return true;
-		}
-		return false;
-	}
+    bool SetProperty(string name, float value)
+    {
+        MaterialProperty property = FindProperty(name, properties, false);
+        if (property != null)
+        {
+            property.floatValue = value;
+            return true;
+        }
+        return false;
+    }
 
 
-	void SetProperty (string name, string keyword, bool value) {
-		if (SetProperty(name, value ? 1f : 0f)) {
-			SetKeyword(keyword, value);
-		}
-	}
+    void SetProperty(string name, string keyword, bool value)
+    {
+        if (SetProperty(name, value ? 1f : 0f))
+        {
+            SetKeyword(keyword, value);
+        }
+    }
 
     //render queue is set by assigning to the renderqueue property of all materials 
     RenderQueue RenderQueue
@@ -204,7 +212,7 @@ public class CustomShaderGUI : ShaderGUI
     void TransparentPreset()
     {
         if (HasPremultiplyAlpha && PresetButton("Transparent"))
-        { 
+        {
             if (PresetButton("Transparent"))
             {
 
@@ -214,9 +222,27 @@ public class CustomShaderGUI : ShaderGUI
                 DstBlend = BlendMode.OneMinusSrcAlpha;
                 ZWrite = false;
                 RenderQueue = RenderQueue.Transparent;
-            }    
+            }
         }
 
 
+    }
+
+    //make sure the maintext points to the same texture as the basemap
+    void CopyLightMappingProperties()
+    {
+        MaterialProperty mainTex = FindProperty("_MainTex", properties, false);
+        MaterialProperty baseMap = FindProperty("_BaseMap", properties, false);
+        if (mainTex != null && baseMap != null)
+        {
+            mainTex.textureValue = baseMap.textureValue;
+            mainTex.textureScaleAndOffset = baseMap.textureScaleAndOffset;
+        }
+        MaterialProperty color = FindProperty("_Color", properties, false);
+        MaterialProperty baseColor = FindProperty("_BaseColor", properties, false);
+        if (color != null && baseColor != null)
+        {
+            color.colorValue = baseColor.colorValue;
+        }
     }
 }

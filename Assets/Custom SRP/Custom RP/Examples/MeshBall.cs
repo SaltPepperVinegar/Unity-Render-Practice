@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.Rendering;
 public class MeshBall : MonoBehaviour
 {
     static int
@@ -22,6 +22,8 @@ public class MeshBall : MonoBehaviour
     float[] smoothness = new float[1023];
 
     MaterialPropertyBlock block;
+	[SerializeField]
+	LightProbeProxyVolume lightProbeVolume = null;
 
     void Awake()
     {
@@ -50,8 +52,33 @@ public class MeshBall : MonoBehaviour
             block.SetVectorArray(baseColorId, baseColors);
             block.SetFloatArray(metallicId, metallic);
             block.SetFloatArray(smoothnessId, smoothness);
+            if (!lightProbeVolume)
+            {
+                var positions = new Vector3[1023];
+                for (int i = 0; i < matrices.Length; i++)
+                {
+                    positions[i] = matrices[i].GetColumn(3);
+                }
+                var lightProbes = new SphericalHarmonicsL2[1023];
+
+                LightProbes.CalculateInterpolatedLightAndOcclusionProbes(
+                    positions, lightProbes, null
+                );
+                block.CopySHCoefficientArraysFrom(lightProbes);
+
+            }
 
         }
+
+        Graphics.DrawMeshInstanced(
+            mesh, 0, material, matrices, 1023, block,
+            UnityEngine.Rendering.ShadowCastingMode.On, true, 0,
+            null, 
+            lightProbeVolume ?
+            LightProbeUsage.UseProxyVolume : LightProbeUsage.CustomProvided,
+			lightProbeVolume
+
+        );
         
         /*
         Graphics.DrawMeshInstanced(...) issues manual draw calls directly to Unity’s GPU command queue.
