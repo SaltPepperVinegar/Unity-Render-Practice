@@ -2,6 +2,7 @@
 #define  CUSTOM_LIT_INPUT_INCLUDED
 
 TEXTURE2D(_BaseMap);
+TEXTURE2D(_EmissionMap);
 SAMPLER(sampler_BaseMap);
 /*
 SRP batcher:
@@ -15,7 +16,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
     UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
     UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
-
+	UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 float2 TransformBaseUV (float2 baseUV){
@@ -39,6 +40,12 @@ float GetMetallic (float2 baseUV) {
 
 float GetSmoothness (float2 baseUV) {
     return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
+}
+
+float3 GetEmission (float2 baseUV) {
+	float4 map = SAMPLE_TEXTURE2D(_EmissionMap, sampler_BaseMap, baseUV);
+	float4 color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissionColor);
+	return map.rgb * color.rgb;
 }
 
 #endif

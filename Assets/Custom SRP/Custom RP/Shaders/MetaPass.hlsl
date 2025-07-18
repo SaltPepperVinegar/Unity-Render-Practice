@@ -5,6 +5,9 @@
 #include "../ShaderLibrary/Shadows.hlsl"
 #include "../ShaderLibrary/Light.hlsl"
 #include "../ShaderLibrary/BRDF.hlsl"
+bool4 unity_MetaFragmentControl;
+float unity_OneOverOutputBoost;
+float unity_MaxOutputValue;
 
 
 struct Attributes {
@@ -33,7 +36,6 @@ Varyings MetaPassVertex(Attributes input){
 
 //float should be used for positions and texture coodinates only and half everything elseif optimizing for mobile 
 float4 MetaPassFragment(Varyings input)  : SV_TARGET {
-    bool4 unity_MetaFragmentControl;
     float4 base = GetBase(input.baseUV);
     Surface surface;
     ZERO_INITIALIZE(Surface, surface);
@@ -45,9 +47,13 @@ float4 MetaPassFragment(Varyings input)  : SV_TARGET {
     if (unity_MetaFragmentControl.x) {
         meta = float4(brdf.diffuse, 1.0);
     }
+    else if (unity_MetaFragmentControl.y) {
+		meta = float4(GetEmission(input.baseUV), 1.0);
+	}
+
     meta.rgb += brdf.specular * brdf.roughness * 0.5; 
     meta.rgb = min(
-        PositivePow(meta.rgb, unity_oneOverOutputBoost), unity_MaxOutputValue
+        PositivePow(meta.rgb, unity_OneOverOutputBoost), unity_MaxOutputValue
     );
 	return meta;
 } 
