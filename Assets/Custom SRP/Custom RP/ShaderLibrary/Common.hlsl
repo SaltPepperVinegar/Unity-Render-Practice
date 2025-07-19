@@ -16,7 +16,7 @@
 #define UNITY_MATRIX_P glstate_matrix_projection
 
 // Unity Instancing only get instanced automatically when SHADOWS_SHADOWMASK is defined.
-#if defined(_SHADOW_MASK_DISTANCE)
+#if defined(_SHADOW_MASK_ALWAYS) || defined(_SHADOW_MASK_DISTANCE)
 	#define SHADOWS_SHADOWMASK
 #endif
 

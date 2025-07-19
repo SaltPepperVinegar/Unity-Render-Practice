@@ -90,7 +90,7 @@ float4 SampleBakedShadows (float2 lightMapUV, Surface surfaceWS) {
         if (unity_ProbeVolumeParams.x){
             return SampleProbeOcclusion(
 				TEXTURE3D_ARGS(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH),
-                surfaceWS.position,
+                surfaceWS.position, // normal vector is not used for occlusion
                 unity_ProbeVolumeWorldToObject,
                 unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z,
                 unity_ProbeVolumeMin.xyz, unity_ProbeVolumeSizeInv.xyz
@@ -104,17 +104,21 @@ float4 SampleBakedShadows (float2 lightMapUV, Surface surfaceWS) {
 
 
 GI GetGI (float2 lightMapUV, Surface surfaceWS) {
-    GI gi; 
-    gi.diffuse = SampleLightMap(lightMapUV) + SampleLightProbe(surfaceWS);
-    gi.shadowMask.distance = false;
-    gi.shadowMask.shadows = 1.0;
-    #if defined(_SHADOW_MASK_DISTANCE)
-        gi.shadowMask.distance = true;
-        gi.shadowMask.shadows = SampleBakedShadows(lightMapUV, surfaceWS);
-    #endif
+	GI gi;
+	gi.diffuse = SampleLightMap(lightMapUV) + SampleLightProbe(surfaceWS);
+	gi.shadowMask.always = false;
+	gi.shadowMask.distance = false;
+	gi.shadowMask.shadows = 1.0;
 
-    return gi;
-} 
+	#if defined(_SHADOW_MASK_ALWAYS)
+		gi.shadowMask.always = true;
+		gi.shadowMask.shadows = SampleBakedShadows(lightMapUV, surfaceWS);
+	#elif defined(_SHADOW_MASK_DISTANCE)
+		gi.shadowMask.distance = true;
+		gi.shadowMask.shadows = SampleBakedShadows(lightMapUV, surfaceWS);
+	#endif
+	return gi;
+}
 
 
 #endif 
