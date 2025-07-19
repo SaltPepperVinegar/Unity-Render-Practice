@@ -35,12 +35,19 @@ struct DirectionalShadowData {
 	int tileIndex;
 	float normalBias;
 };
+//to know whether a shadow mask is in use,
+struct ShadowMask {
+	bool distance;
+	float4 shadows;
+};
+
 struct ShadowData {
 	//the cascade index is determined per fragment than per light
 	int cascadeIndex;
 	//cascade blend to make the cascade transition less noticeable
 	float cascadeBlend;
 	float strength;
+	ShadowMask shadowMask;
 };
 
 float FadedShadowStrength (float distance, float scale, float fade){
@@ -54,6 +61,8 @@ ShadowData GetShadowData (Surface surfaceWS) {
 	data.strength = FadedShadowStrength(
 		surfaceWS.depth,  _ShadowDistanceFade.x, _ShadowDistanceFade.y
 	);
+	data.shadowMask.distance = false;
+	data.shadowMask.shadows = 1.0;
 	// loop through all cascade culling spheres until find one that contains the surface position
 
 	int i; 
@@ -118,20 +127,12 @@ float FilterDirectionalShadow (float3 positionSTS) {
 	#endif 
 }
 
-
-//return the shadow attenuation 
-//given directional shadow data and a surface defined in world space 
-float GetDirectionalShadowAttenuation (DirectionalShadowData directional, ShadowData global, Surface surfaceWS){
-    #if !defined(_RECEIVE_SHADOWS)
-		return 1.0;
-	#endif
-
-	if (directional.strength <= 0.0){
-        return 1.0;
-    }
+float GetCascadeShadow(
+	DirectionalShadowData directional,, ShadowData global, Surface surfaceWS
+){
 	//multiply the surface normal with the offset to find the normal bias 
 	float3 normalBias = surfaceWS.normal *(directional.normalBias * _CascadeData[global.cascadeIndex].y);
-    //use the tile offset to retrieve the correct matrix;
+	//use the tile offset to retrieve the correct matrix;
 	//     - added normal bias to world position before calculating the position in  shadow tile space 
 	float3 positionSTS = mul(
 		_DirectionalShadowMatrices[directional.tileIndex],
@@ -149,7 +150,24 @@ float GetDirectionalShadowAttenuation (DirectionalShadowData directional, Shadow
 			FilterDirectionalShadow(positionSTS), shadow, global.cascadeBlend
 		);
 	}
-	return lerp(1.0, shadow, directional.strength);
+}
+
+//return the shadow attenuation 
+//given directional shadow data and a surface defined in world space 
+float GetDirectionalShadowAttenuation (DirectionalShadowData directional, ShadowData global, Surface surfaceWS){
+    #if !defined(_RECEIVE_SHADOWS)
+		return 1.0;
+	#endif
+	float shadow;
+	if (directional.strength <= 0.0){
+        shadow = 1.0;
+    } else {
+		shadow = GetCascadeShadow(directional, global, surfaceWS);
+		shadow = lerp(1.0, shadow, directional.strength);
+	}
+
+
+	return shadow;
 }
 
 

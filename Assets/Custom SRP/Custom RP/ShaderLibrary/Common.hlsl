@@ -15,6 +15,11 @@
 #define UNITY_PREV_MATRIX_I_M unity_prev_MatrixIM
 #define UNITY_MATRIX_P glstate_matrix_projection
 
+// Unity Instancing only get instanced automatically when SHADOWS_SHADOWMASK is defined.
+#if defined(_SHADOW_MASK_DISTANCE)
+	#define SHADOWS_SHADOWMASK
+#endif
+
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 

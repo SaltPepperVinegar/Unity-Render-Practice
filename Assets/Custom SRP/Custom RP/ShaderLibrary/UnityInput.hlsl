@@ -8,8 +8,9 @@ CBUFFER_START(UnityPerDraw)
     float4x4 unity_ObjectToWorld;
     float4x4 unity_WorldToObject;
     float4 unity_LODFade;
-    real4 unity_WorldTransformParams;
-
+    real4 unity_WorldTransformParams;\
+    //baked shadow mask data into light probe
+    float4 unity_ProbesOcclusion;
     float4 unity_LightmapST;
     //deprecated variable to ensure SRP batcher compatibility 
     float4 unity_DynamicLightmapST;

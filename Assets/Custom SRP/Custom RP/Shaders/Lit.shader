@@ -50,7 +50,8 @@ Shader "Custom RP/Lit"
             #pragma shader_feature _PREMULTIPLY_ALPHA
             #pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
             #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
-
+            
+            #pragma multi_compile _ _SHADOW_MASK_DISTANCE
             //render lightmapped objects with light map on shader variants
             #pragma multi_compile _ LIGHTMAP_ON
 

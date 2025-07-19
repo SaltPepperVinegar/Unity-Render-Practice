@@ -49,12 +49,19 @@ public class Shadows
         "_CASCADE_BLEND_DITHER",
     };
 
+    //control whether shadow mask is used 
+    static String[] shadowMaskKeywords = {
+        "_SHADOW_MASK_DISTANCE"
+    };
+
+    bool useShadowMask;
     public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSettings settings)
     {
         this.cullingResults = cullingResults;
         this.context = context;
         this.settings = settings;
         ShadowedDirectionalLightCount = 0;
+        useShadowMask = false;
     }
 
     void ExecuteBuffer()
@@ -81,10 +88,22 @@ public class Shadows
     //3. shadow normal bias
     public Vector3 ReserveDirectionalShadows(Light light, int visibleLightIndex)
     {
+
         if (ShadowedDirectionalLightCount < maxShadowedDirectionalLightCount &&
         light.shadows != LightShadows.None && light.shadowStrength > 0f &&
         cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b))
         {
+
+            LightBakingOutput lightBaking = light.bakingOutput;
+            if (
+                lightBaking.lightmapBakeType == LightmapBakeType.Mixed &&
+                lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask
+            )
+            {
+                useShadowMask = true;
+
+            }
+
             shadowedDirectionalLights[ShadowedDirectionalLightCount] =
                 new ShadowedDirectionalLight
                 {
@@ -117,6 +136,11 @@ public class Shadows
             32,
             FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
         }
+        buffer.BeginSample(bufferName);
+        //set only when shadow mask is used
+        SetKeywords(shadowMaskKeywords, useShadowMask ? 0 : -1);
+        buffer.EndSample(bufferName);
+        ExecuteBuffer();
     }
 
     void SetKeywords(string[] keywords, int enabledIndex)
