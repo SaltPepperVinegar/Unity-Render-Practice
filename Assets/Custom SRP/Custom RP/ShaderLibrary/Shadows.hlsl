@@ -130,7 +130,7 @@ float FilterDirectionalShadow (float3 positionSTS) {
 	#endif 
 }
 
-float GetCascadeShadow(
+float GetCascadedShadow(
 	DirectionalShadowData directional, ShadowData global, Surface surfaceWS
 ){
 	//multiply the surface normal with the offset to find the normal bias 
@@ -167,11 +167,10 @@ float GetBakedShadow (ShadowMask mask, int channel) {
 }
 
 float GetBakedShadow (ShadowMask mask, int channel, float strength) {
-	float shadow = 1.0;
 	if (mask.always || mask.distance) {
-		shadow = lerp(1.0, GetBakedShadow(mask, channel), strength);
+		return lerp(1.0, GetBakedShadow(mask, channel), strength);
 	}
-	return shadow;
+	return 1.0;
 }
 
 float MixBakedAndRealtimeShadows (
@@ -179,7 +178,7 @@ float MixBakedAndRealtimeShadows (
 ) {
 	float baked = GetBakedShadow(global.shadowMask, shadowMaskChannel);
 	if (global.shadowMask.always) {
-		shadow =  lerp(1.0, baked, global.strength);
+		shadow = lerp(1.0, shadow, global.strength);
 		shadow = min(baked, shadow);
 		return lerp(1.0, shadow, strength);
 	}
@@ -199,8 +198,9 @@ float GetDirectionalShadowAttenuation (DirectionalShadowData directional, Shadow
 	if (directional.strength * global.strength<= 0.0){
         shadow = GetBakedShadow(global.shadowMask, directional.shadowMaskChannel, abs(directional.strength));
     } else {
-		shadow = GetCascadeShadow(directional, global, surfaceWS);
-		shadow = MixBakedAndRealtimeShadows(global, shadow, directional.shadowMaskChannel, directional.strength);
+		shadow = GetCascadedShadow(directional, global, surfaceWS);
+		shadow = MixBakedAndRealtimeShadows(
+			global, shadow, directional.shadowMaskChannel, directional.strength);
 
 	}
 
