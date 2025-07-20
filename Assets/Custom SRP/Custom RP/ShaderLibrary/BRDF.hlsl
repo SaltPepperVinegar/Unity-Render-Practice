@@ -29,7 +29,12 @@ float SpecularStrength (Surface surface, BRDF brdf, Light light) {
 float3 DirectBRDF (Surface surface, BRDF brdf, Light light) {
     return SpecularStrength(surface, brdf, light) * brdf.specular + brdf.diffuse;
 }
-
+float3 IndirectBRDF  (Surface surface, BRDF brdf, float3 diffuse, float3 specular) {
+    float3 reflection = specular * brdf.specular; 
+    //roughness scatters the reflections
+    reflection /= brdf.roughness* brdf.roughness + 0.1;
+    return diffuse * brdf.diffuse + reflection;
+}
 //BRDF property of the surface
 BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false) {
     BRDF brdf;

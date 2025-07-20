@@ -109,7 +109,7 @@ public partial class CameraRenderer
             enableInstancing = useGPUInstancing,
             //flag from the PerObjectData which tells unity to include shader data 
             //perObjectData is a bit flag enum 
-            perObjectData = PerObjectData.Lightmaps | PerObjectData.ShadowMask|
+            perObjectData = PerObjectData.ReflectionProbes| PerObjectData.Lightmaps | PerObjectData.ShadowMask|
             PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
             PerObjectData.LightProbeProxyVolume | PerObjectData.OcclusionProbeProxyVolume
 		};
