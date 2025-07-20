@@ -45,6 +45,12 @@ Varyings LitPassVertex(Attributes input){
 //float should be used for positions and texture coodinates only and half everything elseif optimizing for mobile 
 float4 LitPassFragment(Varyings input)  : SV_TARGET {
     UNITY_SETUP_INSTANCE_ID(input);
+
+    //x component of unity_LODFade is the LOD fade factor
+        //a factor that is from 0 to 1, 1: next LOD, 0: current LOD
+    //y component is fade factor quantized to sixteen steps
+    ClipLOD(input.positionCS.xy, unity_LODFade.x);
+
     float4 base = GetBase(input.baseUV);
     #if defined(_CLIPPING)
         clip(base.a - GetCutoff(input. baseUV));

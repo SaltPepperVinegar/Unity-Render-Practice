@@ -43,4 +43,17 @@ float Square (float v) {
 float DistanceSquared(float3 pA, float3 pB) {
 	return dot(pA - pB, pA - pB);
 }
+
+void ClipLOD (float2 positionCS, float fade) {
+    #if defined(LOD_FADE_CROSSFADE)
+        float dither = InterleavedGradientNoise(positionCS.xy, 0);
+        // 1) Build a comparison value around zero:
+        //    – If fade < 0, we're before the start of the fade zone,
+        //      so we add noise (+dither) to “jitter” some pixels back in.
+        //    – If fade ≥ 0, we're inside or past the fade zone,
+        //      so we subtract noise (–dither) to jitter some pixels out.
+        // 2) Clip if the fade value is less than the dither value.
+        clip(fade+ (fade < 0.0 ? dither : -dither));
+    #endif
+}
 #endif

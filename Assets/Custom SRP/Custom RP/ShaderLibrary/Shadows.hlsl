@@ -60,12 +60,14 @@ float FadedShadowStrength (float distance, float scale, float fade){
 ShadowData GetShadowData (Surface surfaceWS) {
 	ShadowData data;
 	data.shadowMask.always = false;
+	data.shadowMask.distance = false;
+	data.shadowMask.shadows = 1.0;
+
 	data.cascadeBlend = 1.0;
 	data.strength = FadedShadowStrength(
 		surfaceWS.depth,  _ShadowDistanceFade.x, _ShadowDistanceFade.y
 	);
-	data.shadowMask.distance = false;
-	data.shadowMask.shadows = 1.0;
+
 	// loop through all cascade culling spheres until find one that contains the surface position
 
 	int i; 
