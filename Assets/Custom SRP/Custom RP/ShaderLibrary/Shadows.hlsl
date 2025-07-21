@@ -136,7 +136,8 @@ float GetCascadedShadow(
 	DirectionalShadowData directional, ShadowData global, Surface surfaceWS
 ){
 	//multiply the surface normal with the offset to find the normal bias 
-	float3 normalBias = surfaceWS.normal *(directional.normalBias * _CascadeData[global.cascadeIndex].y);
+	float3 normalBias = surfaceWS.interpolatedNormal
+		 *(directional.normalBias * _CascadeData[global.cascadeIndex].y);
 	//use the tile offset to retrieve the correct matrix;
 	//     - added normal bias to world position before calculating the position in  shadow tile space 
 	float3 positionSTS = mul(
@@ -145,7 +146,7 @@ float GetCascadedShadow(
 	).xyz;
 	float shadow = FilterDirectionalShadow (positionSTS);
 	if (global.cascadeBlend < 1.0) {
-		normalBias = surfaceWS.normal * 
+		normalBias = surfaceWS.interpolatedNormal * 
 			(directional.normalBias * _CascadeData[global.cascadeIndex + 1].y);
 		positionSTS = mul(
 			_DirectionalShadowMatrices[directional.tileIndex + 1.0],

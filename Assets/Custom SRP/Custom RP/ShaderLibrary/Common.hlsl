@@ -22,7 +22,7 @@
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
-
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
 
 /*
 float3 TransformObjectToWorld (float3 positionOS){
@@ -54,6 +54,15 @@ void ClipLOD (float2 positionCS, float fade) {
         //      so we subtract noise (–dither) to jitter some pixels out.
         // 2) Clip if the fade value is less than the dither value.
         clip(fade+ (fade < 0.0 ? dither : -dither));
+    #endif
+}
+
+float3 DecodeNormal (float4 sample, float scale) {
+    //DXT is a compression format that partitions the texture into 4x4 blocks.
+    #if defined(UNITY_NO_DXT5nm)
+        return normalize(UnpackNormalRGB(sample, scale));
+    #else 
+        return normalize(UnpackNormalmapRGorAG(sample, scale));
     #endif
 }
 #endif

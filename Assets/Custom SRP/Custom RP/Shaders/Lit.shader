@@ -10,6 +10,7 @@ Shader "Custom RP/Lit"
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
         [Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha("Premultiply Apha", Float) = 0
+        [Toggle(_MASK_MAP)] _MaskMapToggle("Mask Map", Float) = 0
         [NoScaleOffset] _MaskMap("Mask (MODS)", 2D) = "white" {}
         _Metallic("Metalllic", Range(0,1)) = 0
         _Occlusion("Occlusion", Range(0,1)) = 1
@@ -23,9 +24,17 @@ Shader "Custom RP/Lit"
         [Toggle (_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
 		[NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
 		[HDR] _EmissionColor("Emission", Color) = (0.0, 0.0, 0.0, 0.0)
+        [Toggle(_Detail_Map)] _DetailMapToggle("Detail Map", Float) = 0
         _DetailMap("Details", 2D) = "linearGrey" {}
+        [NoScaleOffset] _DetailNormalMap("Detail Normal Map", 2D) = "bump" {}
         _DetailAlbedo("Detail Albedo", Range(0, 1)) = 1
         _DetailSmoothness("Detail Smoothness", Range(0, 1)) = 1
+        _DetailNormalScale("Detail Normal Scale", Range(0, 1)) = 1
+        
+        
+        [NoScaleOffset] _NormalMap("Normal Map", 2D) = "bump" {}
+        _NormalScale("Normal Scale", Range(0, 1)) = 1
+
 		[HideInInspector] _MainTex("Texture for Lightmap", 2D) = "white" {}
 		[HideInInspector] _Color("Color for Lightmap", Color) = (0.5, 0.5, 0.5, 1.0)
     }   
@@ -55,6 +64,9 @@ Shader "Custom RP/Lit"
             #pragma shader_feature _RECEIVE_SHADOWS 
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _PREMULTIPLY_ALPHA
+            #pragma shader_feature _MASK_MAP
+			#pragma shader_feature _DETAIL_MAP
+
             #pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
             #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
             
