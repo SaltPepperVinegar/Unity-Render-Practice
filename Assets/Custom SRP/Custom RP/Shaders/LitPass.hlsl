@@ -68,6 +68,7 @@ float4 LitPassFragment(Varyings input)  : SV_TARGET {
     surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0);
     surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
 	surface.depth = -TransformWorldToView(input.positionWS).z;
+    surface.fresnelStrength = getFresnel(input.baseUV);
 	#if defined(_PREMULTIPLY_ALPHA)
 		BRDF brdf = GetBRDF(surface, true);
 	#else
@@ -75,7 +76,7 @@ float4 LitPassFragment(Varyings input)  : SV_TARGET {
 	#endif
     
     //macro defined in GI.hlsl
-    GI gi = GetGI(GI_FRAGMENT_DATA(input), surface);
+    GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     float3 color = GetLighting(surface, brdf, gi);
     color += GetEmission(input.baseUV);
 	return float4(color,surface.alpha);
