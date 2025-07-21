@@ -1,15 +1,40 @@
 #ifndef  CUSTOM_LIT_INPUT_INCLUDED
 #define  CUSTOM_LIT_INPUT_INCLUDED
-#define INPUT_PROP(name) UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, name)
 
 TEXTURE2D(_BaseMap);
 TEXTURE2D(_MaskMap);
 TEXTURE2D(_EmissionMap);
 TEXTURE2D(_NormalMap);
+SAMPLER(sampler_BaseMap);
+
 TEXTURE2D(_DetailMap);
 TEXTURE2D(_DetailNormalMap);
-SAMPLER(sampler_BaseMap);
 SAMPLER(sampler_DetailMap);
+
+/*
+SRP batcher:
+    all material properties have to be defined inside a concrete memory buffer 
+*/
+//also allowing per-instance material data 
+UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+    //segragates _BaseColor by putting it in a specific constant memory buffer, although it remains accessble at the global level
+    UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Occlusion)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
+	UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _DetailMap_ST)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DetailAlbedo)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DetailSmoothness)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DetailNormalScale)
+    UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
+UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+
+#define INPUT_PROP(name) UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, name)
+
 struct InputConfig {
     float2 baseUV;
     float2 detailUV;
@@ -25,46 +50,18 @@ InputConfig GetInputConfig (float2 baseUV, float2 detailUV = 0.0) {
     c.useDetail = false;
     return c;
 }
-/*
-SRP batcher:
-    all material properties have to be defined inside a concrete memory buffer 
-*/
-//also allowing per-instance material data 
-UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-    //segragates _BaseColor by putting it in a specific constant memory buffer, although it remains accessble at the global level
-    UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
-    UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
-    UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
-    UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
-    UNITY_DEFINE_INSTANCED_PROP(float, _Occlusion)
-
-    UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
-	UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
-    UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
-    UNITY_DEFINE_INSTANCED_PROP(float4, _DetailMap_ST)
-    UNITY_DEFINE_INSTANCED_PROP(float, _DetailAlbedo)
-    UNITY_DEFINE_INSTANCED_PROP(float, _DetailSmoothness)
-    UNITY_DEFINE_INSTANCED_PROP(float4, _DetailNormalScale)
-    UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
-UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
-
 
 float2 TransformBaseUV (float2 baseUV){
     float4 baseST = INPUT_PROP(_BaseMap_ST);
     return baseUV * baseST.xy + baseST.zw;
 }
 
-//conversion matrix from tangent space to world space
-float3 NormalTangentToWorld (float3 normalTS, float normalWS, float4 tangentWS) {
-    float3x3 tangentToWorld = 
-        CreateTangentToWorld(normalWS, tangentWS.xyz, tangentWS.w);
-    return TransformTangentToWorld(normalTS, tangentToWorld);
-}
-
 float2 TransformDetailUV (float2 detailUV) {
 	float4 detailST = INPUT_PROP(_DetailMap_ST);
 	return detailUV * detailST.xy + detailST.zw;
 }
+
+
 
 float4 GetMask (InputConfig c) {
     if (c.useMask){
@@ -120,7 +117,7 @@ float3 GetEmission (InputConfig c) {
 	return map.rgb * color.rgb;
 }
 
-float getFresnel (InputConfig c) {
+float GetFresnel (InputConfig c) {
     return INPUT_PROP(_Fresnel);
 }
 
@@ -142,12 +139,12 @@ float3 GetNormalTS (InputConfig c) {
 	float scale = INPUT_PROP(_NormalScale);
 	float3 normal = DecodeNormal(map, scale);
 
-    if(c.useDetail) {
-        map = SAMPLE_TEXTURE2D(_DetailNormalMap, sampler_DetailMap, c.detailUV);
-        scale = INPUT_PROP(_DetailNormalScale) * GetMask(c).b;
-        float3 detail = DecodeNormal(map, scale);
-        normal = BlendNormalRNM(normal, detail);
-    }
+	if (c.useDetail) {
+		map = SAMPLE_TEXTURE2D(_DetailNormalMap, sampler_DetailMap, c.detailUV);
+		scale = INPUT_PROP(_DetailNormalScale) * GetMask(c).b;
+		float3 detail = DecodeNormal(map, scale);
+		normal = BlendNormalRNM(normal, detail);
+	}
 	return normal;
 }
 

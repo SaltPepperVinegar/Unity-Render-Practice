@@ -24,7 +24,9 @@ struct Varyings {
     float4 positionCS: SV_POSITION;
     float3 positionWS : VAR_POSITION;
     float3 normalWS : VAR_NORMAL;
+    #if defined(_NORMAL_MAP)
     float4 tangentWS : VAR_TANGENT;
+    #endif
     float2 baseUV : VAR_BASE_UV;
     float2 detailUV : VAR_DETAIL_UV;
     //macro defined in GI.hlsl
@@ -43,8 +45,10 @@ Varyings LitPassVertex(Attributes input){
     output.detailUV = TransformDetailUV(input.baseUV);
     output.positionCS = TransformWorldToHClip(output.positionWS);
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
-	output.tangentWS =
-		float4(TransformObjectToWorldDir(input.tangentOS.xyz), input.tangentOS.w);
+    #if defined(_NORMAL_MAP)
+        output.tangentWS =
+            float4(TransformObjectToWorldDir(input.tangentOS.xyz), input.tangentOS.w);
+    #endif
     return output;
 }
 
@@ -56,6 +60,8 @@ float4 LitPassFragment(Varyings input)  : SV_TARGET {
         //a factor that is from 0 to 1, 1: next LOD, 0: current LOD
     //y component is fade factor quantized to sixteen steps
     ClipLOD(input.positionCS.xy, unity_LODFade.x);
+
+
     InputConfig config = GetInputConfig(input.baseUV, input.detailUV);
     #if defined(_MASK_MAP)
 		config.useMask = true;
@@ -73,21 +79,27 @@ float4 LitPassFragment(Varyings input)  : SV_TARGET {
 
     Surface surface;
     //get the final mapped normal from the normal map
-	surface.normal = NormalTangentToWorld(
-		GetNormalTS(config), input.normalWS, input.tangentWS
-	);
-    surface.interpolatedNormal = input.normalWS;
+    surface.position = input.positionWS;
+    #if defined(_NORMAL_MAP) 
+        surface.normal = NormalTangentToWorld(
+            GetNormalTS(config), 
+            input.normalWS, input.tangentWS
+        );
+        surface.interpolatedNormal = input.normalWS;
+    #else 
+        surface.normal = normalize(input.normalWS);
+        surface.interpolatedNormal = surface.normal;
+    #endif
+    surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
+	surface.depth = -TransformWorldToView(input.positionWS).z;
     surface.color = base.rgb;
     surface.alpha = base.a;
-	surface.position = input.positionWS;
     surface.metallic = GetMetallic(config);
     surface.occlusion = GetOcclusion(config);
     surface.smoothness = GetSmoothness(config);
     //generates a rotated tile dither pattern given a screen-space XY position (clip-space XY position)
     surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0);
-    surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
-	surface.depth = -TransformWorldToView(input.positionWS).z;
-    surface.fresnelStrength = getFresnel(config);
+    surface.fresnelStrength = GetFresnel(config);
 	#if defined(_PREMULTIPLY_ALPHA)
 		BRDF brdf = GetBRDF(surface, true);
 	#else
