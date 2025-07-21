@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _DETAIL_MAP
   - _NORMAL_MAP
   - _RECEIVE_SHADOWS
   m_InvalidKeywords:
@@ -84,11 +85,11 @@ Material:
     - _BumpScale: 1
     - _Clipping: 0
     - _Cutoff: 0.35
-    - _DetailAlbedo: 0.132
+    - _DetailAlbedo: 0.348
     - _DetailMapToggle: 1
     - _DetailNormalMapScale: 1
-    - _DetailNormalScale: 1
-    - _DetailSmoothness: 0.132
+    - _DetailNormalScale: 0.52
+    - _DetailSmoothness: 0.523
     - _DstBlend: 0
     - _Fresnel: 0
     - _GlossMapScale: 1
