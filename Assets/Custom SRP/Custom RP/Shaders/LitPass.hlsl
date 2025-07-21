@@ -24,6 +24,7 @@ struct Varyings {
     float3 positionWS : VAR_POSITION;
     float3 normalWS : VAR_NORMAL;
     float2 baseUV : VAR_BASE_UV;
+    float2 detailUV : VAR_DETAIL_UV;
     //macro defined in GI.hlsl
     GI_ATTRIBUTE_DATA
     UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -37,6 +38,7 @@ Varyings LitPassVertex(Attributes input){
     TRANSFER_GI_DATA(input, output);
     output.positionWS = TransformObjectToWorld(input.positionOS);
     output.baseUV =  TransformBaseUV(input.baseUV);
+    output.detailUV = TransformDetailUV(input.baseUV);
     output.positionCS = TransformWorldToHClip(output.positionWS);
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     return output;
@@ -51,7 +53,7 @@ float4 LitPassFragment(Varyings input)  : SV_TARGET {
     //y component is fade factor quantized to sixteen steps
     ClipLOD(input.positionCS.xy, unity_LODFade.x);
 
-    float4 base = GetBase(input.baseUV);
+    float4 base = GetBase(input.baseUV, input.detailUV);
     #if defined(_CLIPPING)
         clip(base.a - GetCutoff(input. baseUV));
     #endif
@@ -63,6 +65,7 @@ float4 LitPassFragment(Varyings input)  : SV_TARGET {
     surface.alpha = base.a;
 	surface.position = input.positionWS;
     surface.metallic = GetMetallic(input.baseUV);
+    surface.occlusion = GetOcclusion(input.baseUV);
     surface.smoothness = GetSmoothness(input.baseUV);
     //generates a rotated tile dither pattern given a screen-space XY position (clip-space XY position)
     surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0);

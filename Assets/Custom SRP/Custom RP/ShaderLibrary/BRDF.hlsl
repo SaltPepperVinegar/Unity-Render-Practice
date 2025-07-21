@@ -37,7 +37,7 @@ float3 IndirectBRDF  (Surface surface, BRDF brdf, float3 diffuse, float3 specula
     float3 reflection = specular * lerp(brdf.specular, brdf.fresnel, fresnelStrength); 
     //roughness scatters the reflections
     reflection /= brdf.roughness* brdf.roughness + 1.0;
-    return diffuse * brdf.diffuse + reflection;
+    return (diffuse * brdf.diffuse + reflection) * surface.occlusion;
 }
 //BRDF property of the surface
 BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false) {

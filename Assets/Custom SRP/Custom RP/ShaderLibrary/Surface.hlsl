@@ -9,6 +9,7 @@ struct Surface{
     float3 position;
     float alpha;
     float metallic;
+    float occlusion;
     float smoothness;
     float dither;
     float fresnelStrength;
