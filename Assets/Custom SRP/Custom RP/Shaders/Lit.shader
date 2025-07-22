@@ -66,6 +66,8 @@ Shader "Custom RP/Lit"
             //raising the target level of shader pass to 3.5 
             #pragma target 3.5
             
+            //set per shader feature
+            //striped down to only features that are used in this shader
             #pragma shader_feature _RECEIVE_SHADOWS 
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _PREMULTIPLY_ALPHA
@@ -73,14 +75,17 @@ Shader "Custom RP/Lit"
             #pragma shader_feature _MASK_MAP
 			#pragma shader_feature _DETAIL_MAP
 
+            //set per pipeline feature
+            
             #pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
             #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
             
             #pragma multi_compile _ _SHADOW_MASK_ALWAYS _SHADOW_MASK_DISTANCE
             //render lightmapped objects with light map on shader variants
             #pragma multi_compile _ LIGHTMAP_ON
-            
+            //set by unity
             #pragma multi_compile _ LOD_FADE_CROSSFADE
+            
             //allowing GPU instancing 
             #pragma multi_compile_instancing
 

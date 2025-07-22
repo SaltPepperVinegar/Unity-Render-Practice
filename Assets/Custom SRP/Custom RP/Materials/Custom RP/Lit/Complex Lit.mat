@@ -85,11 +85,11 @@ Material:
     - _BumpScale: 1
     - _Clipping: 0
     - _Cutoff: 0.35
-    - _DetailAlbedo: 0.348
+    - _DetailAlbedo: 0.45
     - _DetailMapToggle: 1
     - _DetailNormalMapScale: 1
-    - _DetailNormalScale: 0.52
-    - _DetailSmoothness: 0.523
+    - _DetailNormalScale: 0.552
+    - _DetailSmoothness: 0.513
     - _DstBlend: 0
     - _Fresnel: 0
     - _GlossMapScale: 1
