@@ -27,7 +27,8 @@ public partial class CameraRenderer
     
     public void Render(
         ScriptableRenderContext context, Camera camera, bool useDynamicBatching,
-        bool useGPUInstancing, ShadowSettings shadowDrawingSettings
+        bool useGPUInstancing, ShadowSettings shadowDrawingSettings,
+        bool useLightsPerObject
     )
     {
         this.context = context;
@@ -48,13 +49,13 @@ public partial class CameraRenderer
 
         ExecuteBuffer();
 
-        lighting.Setup(context, cullingResults, shadowDrawingSettings);
+        lighting.Setup(context, cullingResults, shadowDrawingSettings, useLightsPerObject);
 
         buffer.EndSample(SampleName);
 
         Setup();
 
-        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
+        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing, useLightsPerObject);
 
         DrawUnsupportedShaders();
 
@@ -94,8 +95,13 @@ public partial class CameraRenderer
         ExecuteBuffer();
 
     }
-    void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
-    {
+    void DrawVisibleGeometry(
+        bool useDynamicBatching, bool useGPUInstancing,
+        bool useLightsPerObject //indicate whether lights per object mode should be used. 
+    ) {
+        PerObjectData lightsPerObjectFlags = useLightsPerObject ?
+            PerObjectData.LightData | PerObjectData.LightIndices :
+            PerObjectData.None;
         //camera paramter is used to determine whether orthographic or distance-based sorting applies
         var sortingSettings = new SortingSettings(camera)
         {
@@ -109,9 +115,10 @@ public partial class CameraRenderer
             enableInstancing = useGPUInstancing,
             //flag from the PerObjectData which tells unity to include shader data 
             //perObjectData is a bit flag enum 
-            perObjectData = PerObjectData.ReflectionProbes| PerObjectData.Lightmaps | PerObjectData.ShadowMask|
+            perObjectData = PerObjectData.ReflectionProbes | PerObjectData.Lightmaps | PerObjectData.ShadowMask |
             PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
-            PerObjectData.LightProbeProxyVolume | PerObjectData.OcclusionProbeProxyVolume
+            PerObjectData.LightProbeProxyVolume | PerObjectData.OcclusionProbeProxyVolume |
+            lightsPerObjectFlags
 		};
 
         //setshaderpassname sets which shader pass to use for given index in the draw call. 

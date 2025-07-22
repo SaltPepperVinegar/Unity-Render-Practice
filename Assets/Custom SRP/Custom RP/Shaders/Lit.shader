@@ -85,7 +85,7 @@ Shader "Custom RP/Lit"
             #pragma multi_compile _ LIGHTMAP_ON
             //set by unity
             #pragma multi_compile _ LOD_FADE_CROSSFADE
-            
+            #pragma multi_compile _ _LIGHTS_PER_OBJECT
             //allowing GPU instancing 
             #pragma multi_compile_instancing
 
