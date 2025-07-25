@@ -94,6 +94,7 @@ public class Shadows
         public float slopeScaleBias;
         //offset used to pulling the near plane back
         public float normalBias;
+        public bool isPoint;
     }
     ShadowedOtherLight[] shadowedOtherLights =
         new ShadowedOtherLight[maxShadowedOtherLightCount];
@@ -307,9 +308,17 @@ public class Shadows
 
         int tileSize = atlasSize / split;
 
-        for (int i = 0; i < shadowedOtherLightCount; i++)
-        {
-            RenderSpotShadows(i, split, tileSize);
+        for (int i = 0; i < shadowedOtherLightCount;)
+        {   if (shadowedOtherLights[i].isPoint)
+            {
+                RenderPointShadows(i, split, tileSize);
+                i++;
+            }
+            else
+            {
+                RenderSpotShadows(i, split, tileSize);
+                i += 6;
+            }
         }
         buffer.SetGlobalMatrixArray(otherShadowMatricesId, otherShadowMatrices);
         buffer.SetGlobalVectorArray(otherShadowTilesId, otherShadowTiles);
@@ -370,7 +379,49 @@ public class Shadows
 
         }
     }
-    
+    void RenderPointShadows(int index, int split, int tileSize)
+    {
+        ShadowedOtherLight light = shadowedOtherLights[index];
+        //factor light's normal bias immeidately.
+        float texelSize = 2f / tileSize;
+        float filterSize = texelSize * ((float)settings.other.filter + 1f);
+        float bias = light.normalBias * filterSize * 1.4142136f;
+        float tileScale = 1f / split;
+
+        var shadowSettings = new ShadowDrawingSettings(
+            cullingResults, light.visibleLightIndex, BatchCullingProjectionType.Perspective);
+        float fovBias =
+            Mathf.Atan(1f + bias + filterSize);
+        for (int i = 0; i < 6; i++)
+        {
+            cullingResults.ComputePointShadowMatricesAndCullingPrimitives(
+                light.visibleLightIndex, (CubemapFace)i, fovBias, out Matrix4x4 viewMatrix,
+                out Matrix4x4 projectionMatrix, out ShadowSplitData splitData
+            );
+            shadowSettings.splitData = splitData;
+            int tileIndex = index + i;
+
+            Vector2 offset = SetTileViewport(tileIndex, split, tileSize);
+            SetOtherTileData(tileIndex, offset, tileScale, bias);
+
+            //conversion matrix from world space to light space 
+            otherShadowMatrices[tileIndex] = ConvertToAtlasMatrix(
+                    projectionMatrix * viewMatrix, offset, tileScale
+            );
+            buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
+
+            //adding a (constant bias, slope bias) to the depth of shadow casters
+            //pushing the depth of shadow casters away from the light so incorrect self-shadowing no longer happens
+            buffer.SetGlobalDepthBias(0f, light.slopeScaleBias);
+            ExecuteBuffer();
+            //execute each object's shadowcaster subshader pass  
+            context.DrawShadows(ref shadowSettings);
+            buffer.SetGlobalDepthBias(0f, 0f);
+
+        }
+
+    }
+
     void RenderSpotShadows(int index, int split, int tileSize)
     {
         ShadowedOtherLight light = shadowedOtherLights[index];
@@ -383,8 +434,12 @@ public class Shadows
                 light.visibleLightIndex, out Matrix4x4 viewMatrix,
                 out Matrix4x4 projectionMatrix, out ShadowSplitData splitData
             );
-            shadowSettings.splitData = splitData;
+        viewMatrix.m11 = -viewMatrix.m11;
+        viewMatrix.m12 = -viewMatrix.m12;
+        viewMatrix.m13 = -viewMatrix.m13;
 
+        shadowSettings.splitData = splitData;
+		
         //factor light's normal bias immeidately.
         float texelSize = 2f / (tileSize * projectionMatrix.m00);
         float filterSize = texelSize * ((float)settings.other.filter + 1f);
@@ -392,7 +447,6 @@ public class Shadows
         Vector2 offset = SetTileViewport(index, split, tileSize);
         float tileScale = 1f / split;
         SetOtherTileData(index,offset, tileScale, bias);
-        Debug.Log(bias);
 
             //conversion matrix from world space to light space 
         otherShadowMatrices[index] = ConvertToAtlasMatrix(
@@ -433,8 +487,10 @@ public class Shadows
             useShadowMask = true;
             maskChannel = lightBaking.occlusionMaskChannel;
         }
+        bool isPoint = light.type == LightType.Point;
+        int newLightCount = shadowedOtherLightCount + (isPoint ? 6 : 1);
         if (
-            shadowedOtherLightCount >= maxShadowedOtherLightCount ||
+            newLightCount > maxShadowedOtherLightCount ||
             !cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b) //no shadow to render for this light
         )
         {
@@ -444,12 +500,16 @@ public class Shadows
         {
             visibleLightIndex = visibleLightIndex,
             slopeScaleBias = light.shadowBias,
-            normalBias = light.shadowNormalBias
+            normalBias = light.shadowNormalBias,
+            isPoint = isPoint
         };
-        return new Vector4(
-            light.shadowStrength, shadowedOtherLightCount++, 0f,
+
+        Vector4 data = new Vector4(
+            light.shadowStrength, shadowedOtherLightCount, isPoint ? 1f : 0f,
             maskChannel
         );
+        shadowedOtherLightCount = newLightCount;
+        return data;
     }
     void SetCascadeData(int index, Vector4 cullingSphere, float tileSize)
     {

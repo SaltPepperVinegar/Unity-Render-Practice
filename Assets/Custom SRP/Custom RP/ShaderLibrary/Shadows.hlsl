@@ -71,8 +71,10 @@ struct ShadowData {
 struct OtherShadowData {
 	float strength;
 	int tileIndex;
+	bool isPoint;
 	int shadowMaskChannel;
 	float3 lightPositionWS;
+	float3 lightDirectionWS;
 	float3 spotDirectionWS;
 };
 
@@ -262,16 +264,34 @@ float GetDirectionalShadowAttenuation (DirectionalShadowData directional, Shadow
 
 	return shadow;
 }
+//plane normal map the matches orientation 
+//the map normals have to point in the opposite direction as the faces. 
+static const float3 pointShadowPlanes[6] = {
+	float3(-1.0, 0.0, 0.0),
+	float3(1.0, 0.0, 0.0),
+	float3(0.0, -1.0, 0.0),
+	float3(0.0, 1.0, 0.0),
+	float3(0.0, 0.0, -1.0),
+	float3(0.0, 0.0, 1.0)
+};
+
 
 float GetOtherShadow(
 	OtherShadowData other, ShadowData global, Surface surfaceWS
 ) {
-	float4 tileData = _OtherShadowTiles[other.tileIndex];
+	float tileIndex = other.tileIndex;
+	float3 lightPlane = other.spotDirectionWS;
+	if (other.isPoint){
+		float faceOffset = CubeMapFaceID(-other.lightDirectionWS);
+		tileIndex += faceOffset;
+		lightPlane = pointShadowPlanes[faceOffset];
+	}
+	float4 tileData = _OtherShadowTiles[tileIndex];
 	float3 surfaceToLight = other.lightPositionWS - surfaceWS.position;
-	float distanceToLightPlane = dot(surfaceToLight, other.spotDirectionWS);
+	float distanceToLightPlane = dot(surfaceToLight, lightPlane);
 	float3 normalBias = surfaceWS.interpolatedNormal * (distanceToLightPlane *tileData.w);
 	float4 positionSTS = mul(
-		_OtherShadowMatrices[other.tileIndex],
+		_OtherShadowMatrices[tileIndex],
 		float4(surfaceWS.position + normalBias, 1.0)
 	);
 	return FilterOtherShadow(positionSTS.xyz / positionSTS.w, tileData.xyz);
