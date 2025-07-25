@@ -74,21 +74,21 @@ public class Lighting
                     if (dirLightCount < maxDirLightCount)
                     {
                         newIndex = otherLightCount;
-                        SetupDirectionalLight(dirLightCount++, ref visibleLight);
+                        SetupDirectionalLight(dirLightCount++, i, ref visibleLight);
                     }
                     break;
                 case LightType.Point:
                     if (otherLightCount < maxOtherLightCount)
                     {
                         newIndex = otherLightCount;
-                        SetupPointLight(otherLightCount++, ref visibleLight);
+                        SetupPointLight(otherLightCount++, i, ref visibleLight);
                     }
                     break;
                 case LightType.Spot:
                     if (otherLightCount < maxOtherLightCount)
                     {
                         newIndex = otherLightCount;
-                        SetupSpotLight(otherLightCount++, ref visibleLight);
+                        SetupSpotLight(otherLightCount++, i, ref visibleLight);
                     }
                     break;
                     
@@ -133,16 +133,16 @@ public class Lighting
 
     }
 
-    void SetupDirectionalLight(int index, ref VisibleLight visibleLight)
+    void SetupDirectionalLight(int index, int visibleIndex, ref VisibleLight visibleLight)
     {
         //final color provided by the final color property 
         dirLightColors[index] = visibleLight.finalColor;
         // forward vector can be found via the third column of localToWorldMatrix
         dirLightDirections[index] = -visibleLight.localToWorldMatrix.GetColumn(2);
 		dirLightShadowData[index] =
-			shadows.ReserveDirectionalShadows(visibleLight.light, index);
+			shadows.ReserveDirectionalShadows(visibleLight.light, visibleIndex);
     }
-    void SetupPointLight(int index, ref VisibleLight visibleLight)
+    void SetupPointLight(int index, int visibleIndex, ref VisibleLight visibleLight)
     {
         otherLightColors[index] = visibleLight.finalColor;
         //position can be found via the fourth column of localToWorldMatrix
@@ -153,11 +153,11 @@ public class Lighting
         otherLightPositions[index] = position;
         otherLightSpotAngles[index] = new Vector4(0f, 1f); // point lights don't have spot angles
         Light light  = visibleLight.light;
-        otherLightShadowData[index] = shadows.ReserveOtherShadows(light, index);
+        otherLightShadowData[index] = shadows.ReserveOtherShadows(light, visibleIndex);
 
     }
 
-    void SetupSpotLight(int index, ref VisibleLight visibleLight)
+    void SetupSpotLight(int index, int visibleIndex, ref VisibleLight visibleLight)
     {
         otherLightColors[index] = visibleLight.finalColor;
         Vector4 position = visibleLight.localToWorldMatrix.GetColumn(3);
@@ -173,7 +173,7 @@ public class Lighting
 		otherLightSpotAngles[index] = new Vector4(
 			angleRangeInv, -outerCos * angleRangeInv
 		);
-        otherLightShadowData[index] = shadows.ReserveOtherShadows(light, index);
+        otherLightShadowData[index] = shadows.ReserveOtherShadows(light, visibleIndex);
 
     }
     public void Cleanup()

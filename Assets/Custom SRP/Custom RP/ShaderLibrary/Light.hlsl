@@ -39,7 +39,15 @@ DirectionalShadowData GetDirectionalShadowData (int lightIndex, ShadowData shado
     data.normalBias = _DirectionalLightShadowData[lightIndex].z;
     return data;
 }
-
+OtherShadowData GetOtherShadowData (int lightIndex) {
+    OtherShadowData data;
+    data.strength = _OtherLightShadowData[lightIndex].x;
+	data.tileIndex = _OtherLightShadowData[lightIndex].y;
+    data.shadowMaskChannel = _OtherLightShadowData[lightIndex].w;
+    data.lightPositionWS = 0.0;
+    data.spotDirectionWS = 0.0;
+    return data;
+}
 Light GetDirectionalLight(int index, Surface surfaceWS, ShadowData shadowData) {
     Light light;
     light.color = _DirectionalLightColors[index].rgb;
@@ -50,31 +58,29 @@ Light GetDirectionalLight(int index, Surface surfaceWS, ShadowData shadowData) {
     return light;
 }
 
-OtherShadowData GetOtherShadowData (int lightIndex) {
-    OtherShadowData data;
-    data.strength = _OtherLightShadowData[lightIndex].x;
-    data.shadowMaskChannel = _OtherLightShadowData[lightIndex].w;
-    return data;
-}
 
 Light GetOtherLight (int index, Surface surfaceWS, ShadowData shadowData) {
 	Light light;
 	light.color = _OtherLightColors[index].rgb;
-	float3 ray = _OtherLightPositions[index].xyz - surfaceWS.position;
+    float3 position = _OtherLightPositions[index].xyz;
+	float3 ray = position - surfaceWS.position;
 	light.direction = normalize(ray);
     float distanceSqr= max(dot(ray, ray), 0.00001f);
     float rangeAttenuation = Square(
         saturate(1.0 - Square(distanceSqr * _OtherLightPositions[index].w))
     );
 	float4 spotAngles = _OtherLightSpotAngles[index];
+    float3 spotDirection = _OtherLightDirections[index].xyz;
     float spotAttenuation = Square(
-        saturate(dot(_OtherLightDirections[index].xyz, light.direction) *
+        saturate(dot(spotDirection, light.direction) *
         spotAngles.x + spotAngles.y)
     );
     OtherShadowData otherShadowData = GetOtherShadowData(index);
     light.attenuation = 
         GetOtherShadowAttenutation(otherShadowData, shadowData, surfaceWS)* 
         spotAttenuation * rangeAttenuation / distanceSqr;
+    otherShadowData.lightPositionWS = position;
+    otherShadowData.spotDirectionWS = spotDirection;
 	return light;
 }
 

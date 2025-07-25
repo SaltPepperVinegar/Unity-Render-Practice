@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.EditorTools;
 using UnityEngine;
 
 
@@ -43,7 +44,9 @@ public class ShadowSettings
         new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
 
         [Range(0.001f, 1f)]
+        [Tooltip("Fade shadows at the edge of the last cascade instead of just cutting off")]
         public float cascadeFade;
+
         public CascadeBlendeMode cascadeBlend;
 
     };
@@ -60,5 +63,19 @@ public class ShadowSettings
         cascadeBlend = CascadeBlendeMode.Hard
     };
 
+
+    [System.Serializable]
+    [Tooltip("Settings for point, spot and area light")]
+    public struct Other
+    {
+        public MapSize atlasSize;
+        public FilterMode filter;
+    };
+
+    public Other other = new Other
+    {
+        atlasSize = MapSize._1024,
+        filter = FilterMode.PCF2x2
+    };
 }
 
