@@ -39,6 +39,18 @@ DirectionalShadowData GetDirectionalShadowData (int lightIndex, ShadowData shado
     data.normalBias = _DirectionalLightShadowData[lightIndex].z;
     return data;
 }
+
+
+Light GetDirectionalLight(int index, Surface surfaceWS, ShadowData shadowData) {
+    Light light;
+    light.color = _DirectionalLightColors[index].rgb;
+    light.direction = _DirectionalLightDirections[index].xyz;
+	DirectionalShadowData dirShadowData = GetDirectionalShadowData(index, shadowData);
+	light.attenuation = GetDirectionalShadowAttenuation(dirShadowData, shadowData, surfaceWS);
+
+    return light;
+}
+
 OtherShadowData GetOtherShadowData (int lightIndex) {
     OtherShadowData data;
     data.strength = _OtherLightShadowData[lightIndex].x;
@@ -50,15 +62,7 @@ OtherShadowData GetOtherShadowData (int lightIndex) {
     data.spotDirectionWS = 0.0;
     return data;
 }
-Light GetDirectionalLight(int index, Surface surfaceWS, ShadowData shadowData) {
-    Light light;
-    light.color = _DirectionalLightColors[index].rgb;
-    light.direction = _DirectionalLightDirections[index].xyz;
-	DirectionalShadowData dirShadowData = GetDirectionalShadowData(index, shadowData);
-	light.attenuation = GetDirectionalShadowAttenuation(dirShadowData, shadowData, surfaceWS);
 
-    return light;
-}
 
 
 Light GetOtherLight (int index, Surface surfaceWS, ShadowData shadowData) {
@@ -78,12 +82,13 @@ Light GetOtherLight (int index, Surface surfaceWS, ShadowData shadowData) {
         spotAngles.x + spotAngles.y)
     );
     OtherShadowData otherShadowData = GetOtherShadowData(index);
-    light.attenuation = 
-        GetOtherShadowAttenutation(otherShadowData, shadowData, surfaceWS)* 
-        spotAttenuation * rangeAttenuation / distanceSqr;
     otherShadowData.lightPositionWS = position;
     otherShadowData.lightDirectionWS = light.direction;
     otherShadowData.spotDirectionWS = spotDirection;
+
+    light.attenuation = 
+        GetOtherShadowAttenuation(otherShadowData, shadowData, surfaceWS)* 
+        spotAttenuation * rangeAttenuation / distanceSqr;
 	return light;
 }
 

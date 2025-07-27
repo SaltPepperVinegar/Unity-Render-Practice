@@ -40,7 +40,7 @@ public class ShadowSettings
         public float cascadeRatio1, cascadeRatio2, cascadeRatio3;
 
         //ratios packed in vector3 
-        public Vector3 CascadRatios =>
+        public Vector3 CascadeRatios =>
         new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
 
         [Range(0.001f, 1f)]

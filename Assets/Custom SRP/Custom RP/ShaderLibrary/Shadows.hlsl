@@ -300,7 +300,7 @@ float GetOtherShadow(
 
 
 //use the same approach as for directional shadows, but only have strength and mask channel
-float GetOtherShadowAttenutation (
+float GetOtherShadowAttenuation (
 	OtherShadowData other, ShadowData global, Surface surfaceWS
 ){
 	#if !defined(_RECEIVE_SHADOWS)
