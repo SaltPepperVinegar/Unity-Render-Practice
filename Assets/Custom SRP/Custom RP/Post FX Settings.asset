@@ -12,3 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b42a1df7cb19e3b4f91ec186de38fd3e, type: 3}
   m_Name: Post FX Settings
   m_EditorClassIdentifier: 
+  shader: {fileID: 4800000, guid: 3a6e861e3073ce140bc9983dc5bb716b, type: 3}
+  bloom:
+    maxIteration: 1
+    downscaleLimit: 2
