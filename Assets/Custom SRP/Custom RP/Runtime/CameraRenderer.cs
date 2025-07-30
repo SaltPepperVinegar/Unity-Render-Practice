@@ -9,9 +9,12 @@ using UnityEngine.Rendering;
 //Simple to support different rendering approaches per camera in the future. 
 public partial class CameraRenderer
 {
+    //structure that provides access to the rendering pipeline 
+    //allows issue render commands directly to the GPU
     ScriptableRenderContext context;
     Camera camera;
     const string bufferName = "Render Camera";
+    static int frameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
     CommandBuffer buffer = new CommandBuffer
     {
         name = bufferName
@@ -24,11 +27,11 @@ public partial class CameraRenderer
         litShaderTagId = new ShaderTagId("CustomLit");
 
     Lighting lighting = new Lighting();
-    
+    PostFXStack postFXStack = new PostFXStack();
     public void Render(
         ScriptableRenderContext context, Camera camera, bool useDynamicBatching,
         bool useGPUInstancing, ShadowSettings shadowDrawingSettings,
-        bool useLightsPerObject
+        bool useLightsPerObject, PostFXSettings postFXSettings
     )
     {
         this.context = context;
@@ -50,7 +53,7 @@ public partial class CameraRenderer
         ExecuteBuffer();
 
         lighting.Setup(context, cullingResults, shadowDrawingSettings, useLightsPerObject);
-
+        postFXStack.Setup(context, camera, postFXSettings);
         buffer.EndSample(SampleName);
 
         Setup();
@@ -59,9 +62,14 @@ public partial class CameraRenderer
 
         DrawUnsupportedShaders();
 
-        DrawGizmos();
+        DrawGizmosBeforeFX();
+        if (postFXStack.IsActive)
+        {
+            postFXStack.Render(frameBufferId);
+        }
+        DrawGizmosAfterFX();
 
-        lighting.Cleanup();
+        Cleanup();
 
         Submit();
     }
@@ -85,6 +93,27 @@ public partial class CameraRenderer
         //First two argument indicate whether the depth and color data should be cleared, which is true for both
         //third argument is Color used to clearing - use Color.clear
             CameraClearFlags flags = camera.clearFlags;
+        if (postFXStack.IsActive)
+        {
+            if (flags > CameraClearFlags.Color)
+            {
+                flags = CameraClearFlags.Color;
+            }
+        }
+
+        if (postFXStack.IsActive)
+        {
+            //fetch texture from the internal cache pool 
+            buffer.GetTemporaryRT(
+                frameBufferId, camera.pixelWidth, camera.pixelHeight,
+                32, FilterMode.Bilinear, RenderTextureFormat.Default
+            );
+            buffer.SetRenderTarget(
+                frameBufferId,
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
+            );
+        }
+        
         buffer.ClearRenderTarget(
             flags <= CameraClearFlags.Depth,
             flags <= CameraClearFlags.Color,
@@ -139,6 +168,14 @@ public partial class CameraRenderer
             cullingResults, ref drawingSettings, ref filteringSettings
         );
 
+    }
+
+    void Cleanup() {
+        lighting.Cleanup();
+        if (postFXStack.IsActive)
+        {
+            buffer.ReleaseTemporaryRT(frameBufferId);
+        }
     }
 
     void Submit()

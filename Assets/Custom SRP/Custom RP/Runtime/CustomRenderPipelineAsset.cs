@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 
 //asset that tells Unity which SRP to use and how to configure it 
@@ -13,9 +14,12 @@ public class CustomRenderPipelineAsset : RenderPipelineAsset
 
     [SerializeField]
     ShadowSettings shadows = default;
+    [SerializeField]
+	PostFXSettings postFXSettings = default;
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRenderPipeline(useDynamicBatching, useGPUInstancing, useSRPBatcher, useLightsPerObject, shadows);
+        return new CustomRenderPipeline(useDynamicBatching, useGPUInstancing, useSRPBatcher,
+        useLightsPerObject, shadows, postFXSettings);
     }
     
 }

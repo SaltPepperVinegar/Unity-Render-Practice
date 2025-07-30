@@ -11,7 +11,9 @@ using UnityEngine.Profiling;
 //Simple to support different rendering approaches per camera in the future. 
 public partial class CameraRenderer
 {
-    partial void DrawGizmos();
+    partial void DrawGizmosBeforeFX();
+    partial void DrawGizmosAfterFX();
+
     partial void DrawUnsupportedShaders();
     partial void PrepareForSceneWindow();
     partial void PrepareBuffer();
@@ -28,13 +30,20 @@ public partial class CameraRenderer
     };
     string SampleName { get; set; }
     static Material errorMaterial;
-    partial void DrawGizmos()
+    partial void DrawGizmosBeforeFX()
     {
         if (Handles.ShouldRenderGizmos())
         {
             context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
-            context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
 
+        }
+    }
+
+    partial void DrawGizmosAfterFX()
+    {
+        if (Handles.ShouldRenderGizmos())
+        {
+            context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
         }
     }
     partial void DrawUnsupportedShaders()
