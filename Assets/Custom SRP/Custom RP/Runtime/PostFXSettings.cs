@@ -24,13 +24,22 @@ public class PostFXSettings : ScriptableObject
         [Min(1f)]
         [Tooltip("the lowest resolution level")]
         public int downscaleLimit;
+        public bool bicubicUpsampling;
+        [Min(0f)]
+        public float threshold;
+        [Range(0f, 1f)]
+        public float thresholdKnee;
+        [Min(0f)]
+        public float intensity;
+
+
     }
 
     [SerializeField]
     BloomSettings bloom = default;
 
     public BloomSettings Bloom => bloom;
-    
+
     public Material Material
     {
         get
@@ -43,6 +52,8 @@ public class PostFXSettings : ScriptableObject
             return material;
         }
     }
+    
+
 
     
 }
