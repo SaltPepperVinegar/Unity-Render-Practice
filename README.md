@@ -11,6 +11,9 @@ learn and try to implement a Custom Render Pipeline from the tutorial https://ca
 7. LOD and reflections - Done
 8. Complex Maps - Done
 9. Point and Spot light -Done
-10. Poitn and Spot Shadow - In Progress
+10. Point and Spot Shadow - Done
+11. Post Processing - Done
+12. HDR - In Progress
     
+
 
